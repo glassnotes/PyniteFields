@@ -15,7 +15,11 @@ later use.
 import math
 
 class FieldElement():
-    def __init__(self, p, n, exp_coefs, power = 0):
+    """
+    Initialize a field element given the field dimensions
+    and the expansion coefficients.
+    """
+    def __init__(self, p, n, exp_coefs):
         self.p = p
         self.n = n
 
@@ -24,15 +28,6 @@ class FieldElement():
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
 
-        # For power of prime fields, each field should have
-        # a number which indicates it's value as a power of
-        # the primitive element. Set it to something useless
-        # in the prime case.
-        if n > 1:
-            self.power = power
-        else:
-            self.power = -1
-        
 
     """
     Add two elements together. Simple modulo for primes, 
@@ -108,7 +103,7 @@ class FieldElement():
     def __pow__(self, exponent):
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p], 0)
+            return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p])
         # Power of prime case
         else:
             print("Under construction!")
@@ -128,6 +123,13 @@ class FieldElement():
         return sum
 
 
+    def __repr__(self):
+        if self.n == 1:
+            return str(self.exp_coefs[0])
+        else:
+            return str(self.exp_coefs)
+
+
     """ 
     Print out information about the element.
     """
@@ -135,10 +137,7 @@ class FieldElement():
         if self.n == 1:
             print(self.exp_coefs[0])
         else:
-            if self.power == 0:
-                print("0" + "\t" + self.exp_coefs)
-            else:
-                print("x^" + self.power + "\t" + self.exp_coefs)
+            print(self.exp_coefs)
 
 
 
