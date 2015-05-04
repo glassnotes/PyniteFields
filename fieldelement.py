@@ -26,9 +26,12 @@ class FieldElement():
 
         # For power of prime fields, each field should have
         # a number which indicates it's value as a power of
-        # the primitive element.
+        # the primitive element. Set it to something useless
+        # in the prime case.
         if n > 1:
             self.power = power
+        else:
+            self.power = -1
         
 
     """
@@ -47,12 +50,11 @@ class FieldElement():
 
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, (self.exp_coefs[0] + el.exp_coefs[0]) % self.p)
+            return FieldElement(self.p, self.n, [(self.exp_coefs[0] + el.exp_coefs[0]) % self.p])
         # Power of prime case
         else:
             print("Under construction!")
         
-            
     
     """
     Compute the difference of two elements. Simple modulo for primes, 
@@ -70,7 +72,7 @@ class FieldElement():
 
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, (self.exp_coefs[0] - el.exp_coefs[0]) % self.p)
+            return FieldElement(self.p, self.n, [(self.exp_coefs[0] - el.exp_coefs[0]) % self.p])
         # Power of prime case
         else:
             print("Under construction!")
@@ -92,7 +94,7 @@ class FieldElement():
 
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, (self.exp_coefs[0] * el.exp_coefs[0]) % self.p)
+            return FieldElement(self.p, self.n, [(self.exp_coefs[0] * el.exp_coefs[0]) % self.p])
         # Power of prime case
         else:
             print("Under construction!")
@@ -104,17 +106,9 @@ class FieldElement():
     extended case.
     """
     def __pow__(self, exponent):
-        # Make sure we're in the same field!
-        if self.p != el.p:
-            print("Error, cannot add elements from different fields!")
-            return None
-        if self.n != el.n:
-            print("Error, cannot add elements from different fields!")
-            return None
-
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, int(math.pow(self.exp_coefs[0], exponent)) % self.p, 0)
+            return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p], 0)
         # Power of prime case
         else:
             print("Under construction!")
@@ -126,13 +120,25 @@ class FieldElement():
     The sum should be an element of the base field for power of prime case.
     """
     def trace(self):
-        FieldElement sum = self
+        sum = self
 
-        for i in range(1, n):
-            sum = sum + pow(self, pow(p, i))
+        for i in range(1, self.n):
+            sum = sum + pow(self, pow(self.p, i))
 
         return sum
 
+
+    """ 
+    Print out information about the element.
+    """
+    def print(self):
+        if self.n == 1:
+            print(self.exp_coefs[0])
+        else:
+            if self.power == 0:
+                print("0" + "\t" + self.exp_coefs)
+            else:
+                print("x^" + self.power + "\t" + self.exp_coefs)
 
 
 

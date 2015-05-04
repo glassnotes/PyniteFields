@@ -3,6 +3,8 @@
 import sys
 import math
 
+from fieldelement import FieldElement
+
 class GaloisField():
     """
     Initialize the Galois Field based on user input.
@@ -47,15 +49,18 @@ class GaloisField():
                 self.coefs = coefs
             else:
                 print("Error, invalid number of coefficients in the irreducible polynomial.")
-                print("Field of size " + str(p) + "^" + str(n) + " should have ", end = "")
+                print("Field of size " + str(self.p) + "^" + str(self.n) + " should have ", end = "")
                 print(str(n + 1) + " coefficients in its irreducible polynomial.")
                 sys.exit()
 
 
         # Generate the actual field elements
         if self.n == 1:
-            # Prime case is easy. No field basis, just the numbers from 0 to p.
-            self.elements = range(0, self.p)
+            # Prime case is easy. No field basis, just the numbers from 0 to p,
+            # stored as FieldElements.
+            self.elements = []
+            for i in range(0, p):
+                self.elements.append(FieldElement(self.p, self.n, [i]))
         else:
             # Use the irreducible polynomial to generate the field elements
             # They will be stored in order as a list of coefficients in the polynomial basis
@@ -69,7 +74,10 @@ class GaloisField():
     Return the coefficient list for element x^i of the field.
     """
     def __getitem__(self, index):
-        return self.elements[i]
+        if index < self.dim:
+            return self.elements[index]
+        else:
+            print("Error, element out of bounds.")
 
 
 
@@ -103,7 +111,8 @@ class GaloisField():
 
         print("\nField elements:")
         if self.n == 1:
-            print(self.elements)
+            for element in self.elements:
+                element.print()
         else:
             print("Under construction!")
 
@@ -112,9 +121,11 @@ def main():
     GF3 = GaloisField(3)
     GF3.print()
 
+    """
     print("\n\n\n")
     GF8 = GaloisField(2, 5, [1, 1, 0, 1, 1, 0, 1])
     GF8.print()
+    """
 
 
 if __name__ == '__main__':
