@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import sys
+import math
 
 class GaloisField():
     """
@@ -34,6 +35,9 @@ class GaloisField():
             self.n = 1
             self.coefs = []
         
+        # Set separate parameter for the field dimension
+        self.dim = int(math.pow(p, n))
+
         # Initialize the coefficients for the irreducible polynomial 
         # to do the field extension with. 
         # TODO check for valid polynomials
@@ -48,7 +52,30 @@ class GaloisField():
                 sys.exit()
 
 
-    # Print out a wealth of useful information about the field.
+        # Generate the actual field elements
+        if self.n == 1:
+            # Prime case is easy. No field basis, just the numbers from 0 to p.
+            self.elements = range(0, self.p)
+        else:
+            # Use the irreducible polynomial to generate the field elements
+            # They will be stored in order as a list of coefficients in the polynomial basis
+            # e.g. in dimension 4, x^2 + x + 1 is the polynomial, use the basis (1, x) and store
+            # the elements as:
+            # 0 -> [0, 0], 1 -> [1, 0], x -> [1, 0], x^2 = [1, 1]
+            print("Under construction!") 
+
+
+    """ 
+    Return the coefficient list for element x^i of the field.
+    """
+    def __getitem__(self, index):
+        return self.elements[i]
+
+
+
+    """
+    Print out a wealth of useful information about the field.
+    """
     def print(self):
         print("--- Galois field information ---")
         print("p = " + str(self.p))
@@ -75,6 +102,10 @@ class GaloisField():
                         print(" + ", end = "")
 
         print("\nField elements:")
+        if self.n == 1:
+            print(self.elements)
+        else:
+            print("Under construction!")
 
 
 def main():
