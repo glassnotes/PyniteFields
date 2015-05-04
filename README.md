@@ -12,9 +12,9 @@ gf = GaloisField(5)
 ```
 
 To create a field with power of prime order you'll need 3 things:
-- A base prime _p_
-- An exponent _n_ such that the field has order _p<sup>n</sup>_
-- Coefficients for an irreducible polynomial.
+- A base prime _p_,
+- An exponent _n_ such that the field has order _p<sup>n</sup>_,
+- Coefficients for an irreducible polynomial with degree _n_.
 
 For example, suppose we want to create the field GF(8). We know the irreducible polynomial
 _1 + x + x<sup>3</sup>_, so we put it's coefficients into a list: [1, 1, 0, 1]. The _i_<sup>th</sup>
@@ -24,6 +24,9 @@ To create the prime power field (using 8 as our example) we feed it the prime, e
 ```
 gf = GaloisField(2, 3, [1, 1, 0, 1])
 ```
+
+<h2> Warning! Power of prime finite fields have yet to be implemented! </h2>
+
 
 All subsequent operations can be achieved using the object ```gf``` which we have created.
 
