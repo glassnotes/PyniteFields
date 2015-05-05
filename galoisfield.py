@@ -67,7 +67,27 @@ class GaloisField():
             # e.g. in dimension 4, x^2 + x + 1 is the polynomial, use the basis (1, x) and store
             # the elements as:
             # 0 -> [0, 0], 1 -> [1, 0], x -> [1, 0], x^2 = [1, 1]
-            print("Under construction!") 
+
+            # The polynomial basis contains n elements
+            # The first element is always 0
+            self.elements.append(FieldElement(self.p, self.n, [0]*self.n), self.coefs)
+
+            # The next few elements are the initial terms in the polynomial basis (i.e. x, x^2 ...)
+            for i in range(1, self.n + 1):
+                next_coefs = [0]*(i - 1) + [1] + [0]*(self.n - i) 
+                self.elements.append(FieldElement(self.p, self.n, next_coefs), self.coefs)
+
+            # For the n^th power of x, we need to use the irreducible polynomial
+            nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
+            self.elements.append(FieldElement(self.p, self.n, nth_coefs), self.coefs)
+    
+            # For the remaining powers, need use multiplication of previous element with primitive element
+            for el in range(self.n + 1, self.dim - 1):
+                next_el = self.elements[1] * self.elements[el - 1]
+                self.elements.append(FieldElement(self.p, self.n, next_el.exp_coefs, self.coefs)
+                 
+            # Finally, the last element in the field is always 1
+            self.elements.append(FieldElement(self.p, self.n, [1] + [0]*(self.n-1)), self.coefs)
 
 
     """ 
