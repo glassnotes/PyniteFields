@@ -48,12 +48,12 @@ class FieldElement():
             return None
 
         # Prime case
-        if self.n == 1
+        if self.n == 1:
             return FieldElement(self.p, self.n, [(self.exp_coefs[0] + el.exp_coefs[0]) % self.p])
         # Power of prime case
         else:
             # Coefficients simply add modulo p
-            new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, n + 1)]
+            new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
             return FieldElement(self.p, self.n, new_coefs, self.poly_coefs)
     
     """
@@ -76,7 +76,7 @@ class FieldElement():
         # Power of prime case
         else:
             # Coefficients subtract modulo p
-            new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, n + 1)]
+            new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
             return FieldElement(self.p, self.n, new_coefs, self.poly_coefs)
 
 

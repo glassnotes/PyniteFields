@@ -70,24 +70,48 @@ class GaloisField():
 
             # The polynomial basis contains n elements
             # The first element is always 0
-            self.elements.append(FieldElement(self.p, self.n, [0]*self.n), self.coefs)
+            self.elements = []
+            self.elements.append(FieldElement(self.p, self.n, [0]*self.n, self.coefs))
+
+            print("Generated 0 element")
+            print(self.elements)
 
             # The next few elements are the initial terms in the polynomial basis (i.e. x, x^2 ...)
-            for i in range(1, self.n + 1):
-                next_coefs = [0]*(i - 1) + [1] + [0]*(self.n - i) 
-                self.elements.append(FieldElement(self.p, self.n, next_coefs), self.coefs)
+            for i in range(1, self.n):
+                next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
+                self.elements.append(FieldElement(self.p, self.n, next_coefs, self.coefs))
+
+            print("Generated easy terms")
+            print(self.elements)
 
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
-            self.elements.append(FieldElement(self.p, self.n, nth_coefs), self.coefs)
+            self.elements.append(FieldElement(self.p, self.n, nth_coefs, self.coefs))
+
+            print("Generated irreducible polynomial term")
+            print(self.elements)
     
             # For the remaining powers, need use multiplication of previous element with primitive element
             for el in range(self.n + 1, self.dim - 1):
-                next_el = self.elements[1] * self.elements[el - 1]
-                self.elements.append(FieldElement(self.p, self.n, next_el.exp_coefs, self.coefs)
+                # Shift all coefficients ahead by 1 power of x and then take the sum because
+                # we know all the previous elements, and will never get anything so big we don't know it
+                next_coefs = [0] + self.elements[el - 1].exp_coefs
+                
+
+                which_to_sum = [self.elements[i] for i, coeff in enumerate(next_coefs) if coeff == 1]
+                sum = self.elements[0]
+
+                for sum_el in which_to_sum:
+                    sum = sum + sum_el
+
+                self.elements.append(sum)
+                print("Appended element")
+                print(sum)
                  
             # Finally, the last element in the field is always 1
-            self.elements.append(FieldElement(self.p, self.n, [1] + [0]*(self.n-1)), self.coefs)
+            self.elements.append(FieldElement(self.p, self.n, [1] + [0]*(self.n-1), self.coefs))
+            print("Completed list:")
+            print(self.elements)
 
 
     """ 
