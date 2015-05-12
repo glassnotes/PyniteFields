@@ -1,0 +1,2 @@
+from pynitefields.galoisfield import GaloisField
+from pynitefields.fieldelement import FieldElement

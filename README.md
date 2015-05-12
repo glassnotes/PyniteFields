@@ -4,11 +4,17 @@ A class library for operations on finite fields (a.k.a. Galois fields) which I f
 PyniteFields is meant to be fairly intuitive and easy to use. It's inspired by some of the ideas in the Mathematica
 FiniteFields package, which is pretty great (except then you have to write everything _else_ in Mathematica too).
 
+You can install PyniteFields as follows:
+```
+cd PyniteFields
+python setup.py install
+```
+
 All operations are done with a single object of the class GaloisField. 
 
 You can create a field with prime order like so (using order 5):
 ```
-from galoisfield import *
+from pynitefields import GaloisField
 gf = GaloisField(5)
 ```
 
