@@ -8,6 +8,7 @@ All operations are done with a single object of the class GaloisField.
 
 You can create a field with prime order like so (using order 5):
 ```
+from galoisfield import *
 gf = GaloisField(5)
 ```
 
@@ -30,9 +31,9 @@ All subsequent operations can be achieved using the object ```gf``` which we hav
 
 We can grab the _i_<sup>th</sup> power of the primitive element using the [] operator:
 ```
-gf[2]   # Returns the element _x_<sup>2</sup>
 gf[0]   # Returns the first element (i.e. 0)
-gf[p - 1]   # Returns the last element, which is always 1
+gf[2]   # Returns the element x^2
+gf[p^n - 1]  # Returns the last element of the field
 ```
 
 Field elements are stored as lists of coefficients in the polynomial basis. For primes this
@@ -52,6 +53,7 @@ pow(gf[4], 3)
 We can also take the trace, which is quite a useful operation:
 ```
 gf[2].trace()
+tr(gf[2])  # Same as above, but more convenient to write
 ``` 
 
 Some functionality which has yet to be implemented is:

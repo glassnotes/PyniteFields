@@ -146,16 +146,15 @@ class GaloisField():
             element.print()
 
 
-def main():
-    GF3 = GaloisField(3)
-    GF3.print()
+"""
+Wrapper for the trace function so the user can choose to do
+tr(x) or x.trace()
+"""
+def tr(x):
+    # Make sure x is a field element
+    if type(x) is not FieldElement:
+        print("Error, invalid argument to function 'tr'.")
+        return None
+    else:
+        return x.trace()
 
-    """
-    print("\n\n\n")
-    GF8 = GaloisField(2, 5, [1, 1, 0, 1, 1, 0, 1])
-    GF8.print()
-    """
-
-
-if __name__ == '__main__':
-    main()
