@@ -19,7 +19,7 @@ class FieldElement():
     Initialize a field element given the field dimensions
     and the expansion coefficients.
     """
-    def __init__(self, p, n, exp_coefs, poly_coefs = []):
+    def __init__(self, p, n, exp_coefs):
         self.p = p
         self.n = n
         self.dim = int(math.pow(p, n))
@@ -28,10 +28,6 @@ class FieldElement():
         # If we're in a prime field, the basis is 1, and
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
-
-        # Need the coefficients of the irreducible polynomial for multiplication in p-o-p fields
-        if len(poly_coefs) > 0:
-            self.poly_coefs = poly_coefs
 
         self.field_list = []
 
@@ -57,7 +53,7 @@ class FieldElement():
         else:
             # Coefficients simply add modulo p
             new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
-            return FieldElement(self.p, self.n, new_coefs, self.poly_coefs)
+            return FieldElement(self.p, self.n, new_coefs)
     
     """
     Compute the difference of two elements. Simple modulo for primes, 
@@ -80,7 +76,7 @@ class FieldElement():
         else:
             # Coefficients subtract modulo p
             new_coefs = [(self.exp_coefs[i] - el.exp_coefs[i]) % self.p for i in range(0, self.n)]
-            return FieldElement(self.p, self.n, new_coefs, self.poly_coefs)
+            return FieldElement(self.p, self.n, new_coefs)
 
 
     """
@@ -140,12 +136,49 @@ class FieldElement():
             return self.field_list[new_exp]
             
 
+    """
+    Make the field element appear in the command line.
+    """
+    def __repr__(self):
+        if self.n == 1:
+            return str(self.exp_coefs[0])
+        else:
+            return str(self.exp_coefs)
+
+
+    """
+    Compute the multiplicative inverse of the field elements.
+    All elements have a multiplicative inverse except 0.
+    """
+    def inv(self):
+        # Prime case - brute force :(
+        if self.n == 1:
+            if self.exp_coefs[0] == 0:
+                print("Error, 0 has no multiplicative inverse.")
+                return
+
+            for i in range(0, self.p):
+                if (self.exp_coefs[0] * i) % self.p == 1:
+                    return FieldElement(self.p, self.n, [i])
+        else:
+            my_index = self.field_list.index(self)
+            if my_index == 0:
+                print("Error, 0 has no multiplicative inverse.")
+                return 
+            # Last element is always 1 which is it's own inverse
+            elif my_index == self.dim - 1:
+                return self.field_list[self.dim - 1]
+            # All other elements, find exponent which sums to dim - 1
+            else:
+                return self.field_list[self.dim - my_index - 1]
+
+
     """ 
     Compute the trace. The formula just relies on the pow function so
     it has the same implementation for prime and powers of prime.
     The sum should be an element of the base field for power of prime case.
     """
-    def trace(self):
+    def tr(self):
         sum = self
 
         for i in range(1, self.n):
@@ -155,13 +188,6 @@ class FieldElement():
             return sum
         else:
             return sum.exp_coefs[0]
-
-
-    def __repr__(self):
-        if self.n == 1:
-            return str(self.exp_coefs[0])
-        else:
-            return str(self.exp_coefs)
 
 
     """ 

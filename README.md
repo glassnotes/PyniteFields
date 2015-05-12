@@ -14,7 +14,7 @@ All operations are done with a single object of the class GaloisField.
 
 You can create a field with prime order like so (using order 5):
 ```
-from pynitefields import GaloisField
+from pynitefields import * 
 gf = GaloisField(5)
 ```
 
@@ -58,7 +58,7 @@ pow(gf[4], 3)
 
 We can also take the trace, which is quite a useful operation:
 ```
-gf[2].trace()
+gf[2].tr()
 tr(gf[2])  # Same as above, but more convenient to write
 ``` 
 

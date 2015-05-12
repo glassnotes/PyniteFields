@@ -71,16 +71,16 @@ class GaloisField():
             # The polynomial basis contains n elements
             # The first element is always 0
             self.elements = []
-            self.elements.append(FieldElement(self.p, self.n, [0]*self.n, self.coefs))
+            self.elements.append(FieldElement(self.p, self.n, [0]*self.n))
 
             # The next few elements are the initial terms in the polynomial basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
-                self.elements.append(FieldElement(self.p, self.n, next_coefs, self.coefs))
+                self.elements.append(FieldElement(self.p, self.n, next_coefs))
 
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
-            self.elements.append(FieldElement(self.p, self.n, nth_coefs, self.coefs))
+            self.elements.append(FieldElement(self.p, self.n, nth_coefs))
 
             # For the remaining powers, use multiplication of previous element with primitive element
             for el in range(self.n + 1, self.dim):
@@ -156,5 +156,19 @@ def tr(x):
         print("Error, invalid argument to function 'tr'.")
         return None
     else:
-        return x.trace()
+        return x.tr()
+
+
+"""
+Wrapper for the inverse function so we can do x.inv()
+or inv(x) interchangeably.
+"""
+def inv(x):
+    # Make sure x is a field element
+    if type(x) is not FieldElement:
+        print("Error, invalid argument to function 'inv'.")
+        return None
+    else:
+        return x.inv()
+
 
