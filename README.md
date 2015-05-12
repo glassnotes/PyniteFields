@@ -30,7 +30,7 @@ All subsequent operations can be achieved using the object ```gf``` which we hav
 
 We can grab the _i_<sup>th</sup> power of the primitive element using the [] operator:
 ```
-gf[2]   # Returns the element _x<sup>2</sup>_
+gf[2]   # Returns the element _x_<sup>2</sup>
 gf[0]   # Returns the first element (i.e. 0)
 gf[p - 1]   # Returns the last element, which is always 1
 ```
@@ -55,7 +55,6 @@ gf[2].trace()
 ``` 
 
 Some functionality which has yet to be implemented is:
-- At the moment, prime power fields are not implemented
 - Finding the self-dual basis (when possible)
 - Transforming the field such that the elements are expressed in the self-dual basis
 
