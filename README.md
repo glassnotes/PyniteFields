@@ -1,5 +1,5 @@
 # PyniteFields
-A class library for operations on finite fields (a.k.a. Galois fields) which I find useful in my line of work.
+A class library for operations on finite fields (a.k.a. Galois fields) which I find useful in my line of work. PyniteFields is implemented in Python 3.
 
 PyniteFields is meant to be fairly intuitive and easy to use. It's inspired by some of the ideas in the Mathematica
 FiniteFields package, which is pretty great (except then you have to write everything _else_ in Mathematica too).
