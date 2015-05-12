@@ -3,7 +3,7 @@
 import sys
 import math
 
-from fieldelement import FieldElement
+from fieldelement import *
 
 class GaloisField():
     """
@@ -73,25 +73,16 @@ class GaloisField():
             self.elements = []
             self.elements.append(FieldElement(self.p, self.n, [0]*self.n, self.coefs))
 
-            print("Generated 0 element")
-            print(self.elements)
-
             # The next few elements are the initial terms in the polynomial basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
                 self.elements.append(FieldElement(self.p, self.n, next_coefs, self.coefs))
 
-            print("Generated easy terms")
-            print(self.elements)
-
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
             self.elements.append(FieldElement(self.p, self.n, nth_coefs, self.coefs))
 
-            print("Generated irreducible polynomial term")
-            print(self.elements)
-    
-            # For the remaining powers, need use multiplication of previous element with primitive element
+            # For the remaining powers, use multiplication of previous element with primitive element
             for el in range(self.n + 1, self.dim - 1):
                 # Shift all coefficients ahead by 1 power of x and then take the sum because
                 # we know all the previous elements, and will never get anything so big we don't know it
@@ -105,13 +96,14 @@ class GaloisField():
                     sum = sum + sum_el
 
                 self.elements.append(sum)
-                print("Appended element")
-                print(sum)
                  
             # Finally, the last element in the field is always 1
             self.elements.append(FieldElement(self.p, self.n, [1] + [0]*(self.n-1), self.coefs))
-            print("Completed list:")
-            print(self.elements)
+
+            # This is really dumb, but make sure each element holds a copy of the whole
+            # list of the field elements. This makes field multiplication infinitely easier.
+            for element in self.elements:
+                element.field_list = self.elements
 
 
     """ 
@@ -122,7 +114,6 @@ class GaloisField():
             return self.elements[index]
         else:
             print("Error, element out of bounds.")
-
 
 
     """
@@ -154,11 +145,8 @@ class GaloisField():
                         print(" + ", end = "")
 
         print("\nField elements:")
-        if self.n == 1:
-            for element in self.elements:
-                element.print()
-        else:
-            print("Under construction!")
+        for element in self.elements:
+            element.print()
 
 
 def main():
