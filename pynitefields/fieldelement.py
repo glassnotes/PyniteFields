@@ -119,6 +119,33 @@ class FieldElement():
         else:
             raise TypeError("Unsupported operator")
 
+ 
+    """
+    Division - multiply by the inverse. Always make sure we're not
+    dividing by zero!
+    """
+    def __truediv__(self, el):
+        if isinstance(el, FieldElement):
+            if self.n != el.n:
+                print("Error, cannot divide elements from different fields.")
+            if self.p != el.p:
+                print("Error, cannot divide elements from different fields.")
+
+            # Prime
+            if self.n == 1:
+                if self.exp_coefs[0] == 0:
+                    print("Error! Cannot divide by 0, silly.")
+                    return
+
+            # Power of prime
+            else:
+                if self.field_list.index(self) == 0:
+                    print("Error! Cannot divide by 0, silly.")
+                    return
+
+            # Actually do the division 
+            return self * el.inv()
+
 
     """
     Compute the power. Simple modulo for primes, 
