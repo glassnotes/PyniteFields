@@ -79,7 +79,7 @@ class FieldElement():
         # Power of prime case
         else:
             # Coefficients subtract modulo p
-            new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
+            new_coefs = [(self.exp_coefs[i] - el.exp_coefs[i]) % self.p for i in range(0, self.n)]
             return FieldElement(self.p, self.n, new_coefs, self.poly_coefs)
 
 
@@ -89,32 +89,39 @@ class FieldElement():
     extended case.
     """
     def __mul__(self, el):
-        # Make sure we're in the same field!
-        if self.p != el.p:
-            print("Error, cannot multiply elements from different fields!")
-            return None
-        if self.n != el.n:
-            print("Error, cannot multiply elements from different fields!")
-            return None
+        # Multiplication by a constant
+        if isinstance(el, int):
+            return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] )
+        elif isinstance(el, FieldElement):
+            # Make sure we're in the same field!
+            if self.p != el.p:
+                print("Error, cannot multiply elements from different fields!")
+                return None
+            if self.n != el.n:
+                print("Error, cannot multiply elements from different fields!")
+                return None
 
-        # Prime case
-        if self.n == 1:
-            return FieldElement(self.p, self.n, [(self.exp_coefs[0] * el.exp_coefs[0]) % self.p])
-        # Power of prime case
-        else:
-            # I stored the whole list of field elements in each element for a reason...
-            # Now we can multiply really easily
-            power_self = self.field_list.index(self)
-            power_el = self.field_list.index(el)
 
-            if power_el == 0 or power_self == 0:
-                return self.field_list[0]
+            # Prime case
+            if self.n == 1:
+                return FieldElement(self.p, self.n, [(self.exp_coefs[0] * el.exp_coefs[0]) % self.p])
+            # Power of prime case
             else:
-                new_exp = power_self + power_el
-                # Overflow
-                if new_exp > self.dim - 1:
-                    new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-                return self.field_list[new_exp]
+                # I stored the whole list of field elements in each element for a reason...
+                # Now we can multiply really easily
+                power_self = self.field_list.index(self)
+                power_el = self.field_list.index(el)
+
+                if power_el == 0 or power_self == 0:
+                    return self.field_list[0]
+                else:
+                    new_exp = power_self + power_el
+                    # Overflow
+                    if new_exp > self.dim - 1:
+                        new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
+                    return self.field_list[new_exp]
+        else:
+            raise TypeError("Unsupported operator")
 
 
     """

@@ -83,13 +83,13 @@ class GaloisField():
             self.elements.append(FieldElement(self.p, self.n, nth_coefs, self.coefs))
 
             # For the remaining powers, use multiplication of previous element with primitive element
-            for el in range(self.n + 1, self.dim - 1):
+            for el in range(self.n + 1, self.dim):
                 # Shift all coefficients ahead by 1 power of x and then take the sum because
                 # we know all the previous elements, and will never get anything so big we don't know it
                 next_coefs = [0] + self.elements[el - 1].exp_coefs
                 
-
-                which_to_sum = [self.elements[i] for i, coeff in enumerate(next_coefs) if coeff == 1]
+                # Get a list of the powers whose coefficients aren't 0
+                which_to_sum = [self.elements[i] * coeff for i, coeff in enumerate(next_coefs) if coeff != 0]
                 sum = self.elements[0]
 
                 for sum_el in which_to_sum:
@@ -97,9 +97,6 @@ class GaloisField():
 
                 self.elements.append(sum)
                  
-            # Finally, the last element in the field is always 1
-            self.elements.append(FieldElement(self.p, self.n, [1] + [0]*(self.n-1), self.coefs))
-
             # This is really dumb, but make sure each element holds a copy of the whole
             # list of the field elements. This makes field multiplication infinitely easier.
             for element in self.elements:

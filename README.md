@@ -16,8 +16,6 @@ To create a field with power of prime order you'll need 3 things:
 - An exponent _n_ such that the field has order _p<sup>n</sup>_,
 - Coefficients for an irreducible polynomial with degree _n_.
 
-<h3> Currently power of prime fields are working only for fields which are powers of 2. </h3>
-
 For example, suppose we want to create the field GF(8). We know the irreducible polynomial
 _1 + x + x<sup>3</sup>_, so we put it's coefficients into a list: [1, 1, 0, 1]. The _i_<sup>th</sup>
 entry in the list corresponds to the coefficient attached to the _i_<sup>th</sup> power of the primitive element _x_.
