@@ -1,25 +1,44 @@
-"""
-Class for an actual element of the field. Contains all the 
-relevant operations. The GaloisField class should store an
-array of these when it creates the field.
-
-This is separate from the main field so that it has it's own type
-and we can do things like
-GF8[4] + GF8[2],
-rather than
-GF8.add(4, 2)
-and thus store the field elements in individual variables for
-later use.
-"""
-
 import math
 
 class FieldElement():
+    """ Class for an element in a finite field.
+    
+    The class GaloisField stores an array of FieldElements().
+    All field arithmetic operations are are implemented within the 
+    FieldElement class.
+     
+    This is separate from the main field so that it has it's own type 
+    and we can do things like 
+    GF8[4] + GF8[2], 
+    rather than 
+    GF8.add(4, 2) 
+    and thus store the field elements in individual variables for 
+    later use. 
+
+
+    Details about member variables:
+    p - The prime dimension of the field this element is in
+    n - The degree of the field extension (1 if prime field)
+    dim - The full dimension of the field p^n
+    exp_coefs - A list of expansion coefficients in the basis of choice
+                (determined by the parent GaloisField class)
+    field_list - A copy of the list of all elements in the parent GaloisField.
+                 Inclusion of this parameter is not ideal, but greatly
+                 simplifies the implementation of many of the arithmetic 
+                 operations (notably multiplication, inverse, exponentiation),
+                 and specifically for power of prime fields.
+                 With field_list, each element knows it's position, or power
+                 of the primitive element in the field, which makes operations
+                 which boil down to simple addition and multiplication of 
+                 exponents of the primitive element on paper much simpler.
     """
-    Initialize a field element given the field dimensions
-    and the expansion coefficients.
-    """
+
     def __init__(self, p, n, exp_coefs):
+        """ Create an element of the finite field.
+
+        Initialize a field element given the field dimensions
+        and the expansion coefficients.
+        """
         self.p = p
         self.n = n
         self.dim = int(math.pow(p, n))
@@ -29,15 +48,19 @@ class FieldElement():
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
 
+        # This gets set by the GaloisField constructor after
+        # ALL the field elements have been created. This is set only
+        # for power of prime fields.
         self.field_list = []
 
 
-    """
-    Add two elements together. Simple modulo for primes, 
-    need to deal with the coefficients modulo p for the 
-    extended case.
-    """
     def __add__(self, el):
+        """ Addition.
+
+        Add two field elements together. Simple modulo for primes, 
+        need to deal with the coefficients modulo p for the 
+        extended case.
+        """
         # Make sure we're in the same field!
         if self.p != el.p:
             print("Error, cannot add elements from different fields!")
@@ -55,12 +78,14 @@ class FieldElement():
             new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
             return FieldElement(self.p, self.n, new_coefs)
     
-    """
-    Compute the difference of two elements. Simple modulo for primes, 
-    need to deal with the coefficients modulo p for the 
-    extended case.
-    """
+
     def __sub__(self, el):
+        """ Subtraction.
+
+        Compute the difference of two elements. Simple modulo for primes, 
+        need to deal with the coefficients modulo p for the 
+        extended case.
+        """
         # Make sure we're in the same field!
         if self.p != el.p:
             print("Error, cannot subtract elements from different fields!")
@@ -79,15 +104,18 @@ class FieldElement():
             return FieldElement(self.p, self.n, new_coefs)
 
 
-    """
-    Compute the product of two elements. Simple modulo for primes, 
-    need to deal with the coefficients modulo p for the 
-    extended case.
-    """
     def __mul__(self, el):
-        # Multiplication by a constant
+        """ Multiplication.
+
+        Compute the product of two elements. Simple modulo for primes, 
+        for power of primes we can use field_list to find out which power
+        of the primitive element each operand is, and then add those together.
+        """
+        # Multiplication by a constant (must be on the right!)
         if isinstance(el, int):
             return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] )
+
+        # Multiplication by another FieldElement
         elif isinstance(el, FieldElement):
             # Make sure we're in the same field!
             if self.p != el.p:
@@ -96,7 +124,6 @@ class FieldElement():
             if self.n != el.n:
                 print("Error, cannot multiply elements from different fields!")
                 return None
-
 
             # Prime case
             if self.n == 1:
@@ -108,23 +135,26 @@ class FieldElement():
                 power_self = self.field_list.index(self)
                 power_el = self.field_list.index(el)
 
-                if power_el == 0 or power_self == 0:
+                if power_el == 0 or power_self == 0: # Multiplying by 0, nothing to see here
                     return self.field_list[0]
                 else:
-                    new_exp = power_self + power_el
-                    # Overflow
-                    if new_exp > self.dim - 1:
+                    new_exp = power_self + power_el # New exponent
+                    # If the exponent calculated is outside the range of primitive element
+                    # powers of the field, we need to wrap it around using the fact that
+                    # the last field element is 1.
+                    if new_exp > self.dim - 1: 
                         new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
                     return self.field_list[new_exp]
         else:
             raise TypeError("Unsupported operator")
 
  
-    """
-    Division - multiply by the inverse. Always make sure we're not
-    dividing by zero!
-    """
     def __truediv__(self, el):
+        """ Division.
+
+        In a Galois Field division is just multiplying by the inverse. 
+        Always make sure we're not dividing by 0, since 0 has no multiplicative inverse.
+        """
         if isinstance(el, FieldElement):
             if self.n != el.n:
                 print("Error, cannot divide elements from different fields.")
@@ -147,11 +177,12 @@ class FieldElement():
             return self * el.inv()
 
 
-    """
-    Compute the power. Simple modulo for primes, 
-    need to wrap around the exponents for power of primes.
-    """
     def __pow__(self, exponent):
+        """ Exponentiation.
+
+        Compute the power self^exponent. Simple modulo for primes, 
+        need to wrap around the exponents for power of primes.
+        """
         # Prime case
         if self.n == 1:
             return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p])
@@ -163,21 +194,20 @@ class FieldElement():
             return self.field_list[new_exp]
             
 
-    """
-    Make the field element appear in the command line.
-    """
     def __repr__(self):
+        """ Make the field element get printed in the command line."""
         if self.n == 1:
             return str(self.exp_coefs[0])
         else:
             return str(self.exp_coefs)
 
 
-    """
-    Compute the multiplicative inverse of the field elements.
-    All elements have a multiplicative inverse except 0.
-    """
     def inv(self):
+        """ Inversion.
+
+        Compute the multiplicative inverse of a field element.
+        All elements have a multiplicative inverse except 0.
+        """
         # Prime case - brute force :(
         if self.n == 1:
             if self.exp_coefs[0] == 0:
@@ -200,12 +230,13 @@ class FieldElement():
                 return self.field_list[self.dim - my_index - 1]
 
 
-    """ 
-    Compute the trace. The formula just relies on the pow function so
-    it has the same implementation for prime and powers of prime.
-    The sum should be an element of the base field for power of prime case.
-    """
     def tr(self):
+        """ Trace.
+
+        Compute the trace of a field element. The formula just relies on the pow function so
+        it has the same implementation for prime and powers of prime. The trace of any element 
+        should be an element of the base field for the power of prime case.
+        """
         sum = self
 
         for i in range(1, self.n):
@@ -217,10 +248,8 @@ class FieldElement():
             return sum.exp_coefs[0]
 
 
-    """ 
-    Print out information about the element.
-    """
     def print(self):
+        """ Print out information about the element."""
         if self.n == 1:
             print(self.exp_coefs[0])
         else:

@@ -20,6 +20,15 @@ class GaloisField():
     GF3 = GaloisField(3) # Produces the Galois field of order 3
     GF8 = GaloisField(2, 3, [1, 0, 1, 1]) # GF of order 8, 
                                           # with polynomial 1 + x^2 + x^3
+
+    GaloisField has a number of member variables:
+    p - The prime dimension of the field
+    n - The degree of the field extension (1 if just a prime field) 
+    dim - The dimension of the space, p^n
+    coefs - The coefficients of the irreducible polynomial
+    elements - A list of all elements in the finite field, of class FieldElement
+    is_sdb - A boolean which tells us whether the expansions are in the self-dual
+             basis (True) or the polynomial basis (False). The default is False.
     """
     def __init__(self, p, n = 1, coefs = []):
         # TODO implement check for prime number
@@ -63,8 +72,8 @@ class GaloisField():
                 self.elements.append(FieldElement(self.p, self.n, [i]))
         else:
             # Use the irreducible polynomial to generate the field elements
-            # They will be stored in order as a list of coefficients in the polynomial basis
-            # e.g. in dimension 4, x^2 + x + 1 is the polynomial, use the basis (1, x) and store
+            # They'll be stored in order as a list of coefficients in the polynomial basis
+            # e.g. in dim 4, x^2 + x + 1 is the polynomial, use the basis (1, x) and store
             # the elements as:
             # 0 -> [0, 0], 1 -> [1, 0], x -> [1, 0], x^2 = [1, 1]
 
@@ -73,7 +82,7 @@ class GaloisField():
             self.elements = []
             self.elements.append(FieldElement(self.p, self.n, [0]*self.n))
 
-            # The next few elements are the initial terms in the polynomial basis (i.e. x, x^2 ...)
+            # The next few elements are initial terms in the poly basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
                 self.elements.append(FieldElement(self.p, self.n, next_coefs))
@@ -82,10 +91,11 @@ class GaloisField():
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
             self.elements.append(FieldElement(self.p, self.n, nth_coefs))
 
-            # For the remaining powers, use multiplication of previous element with primitive element
+            # For the remaining powers, multiply the previous element by primitive element
             for el in range(self.n + 1, self.dim):
-                # Shift all coefficients ahead by 1 power of x and then take the sum because
-                # we know all the previous elements, and will never get anything so big we don't know it
+                # Shift all coefficients ahead by 1 power of x and take the sum because
+                # we know all the previous elements, and will never get anything 
+                # with such a high exponent we don't know it's basis coefficients
                 next_coefs = [0] + self.elements[el - 1].exp_coefs
                 
                 # Get a list of the powers whose coefficients aren't 0
@@ -98,25 +108,65 @@ class GaloisField():
                 self.elements.append(sum)
                  
             # This is really dumb, but make sure each element holds a copy of the whole
-            # list of the field elements. This makes field multiplication infinitely easier.
+            # list of the field elements. This makes field multiplication way easier.
             for element in self.elements:
                 element.field_list = self.elements
 
+        # By default, we are using the polynomial basis
+        is_sdb = False
 
-    """ 
-    Return the coefficient list for element x^i of the field.
-    """
+
     def __getitem__(self, index):
+        """ Return element i (prime) or x^i (power of prime) of the field."""
         if index < self.dim:
             return self.elements[index]
         else:
             print("Error, element out of bounds.")
 
 
-    """
-    Print out a wealth of useful information about the field.
-    """
+    def to_sdb(self, sdb_element_indices):
+        """ Transform the expansions coefficients to the self-dual basis.
+
+        Valid only for power of prime fields. For now, assume that the 
+        user will provide the powers of the primitive element which can 
+        be used as a self-dual basis (later, we will implement this ourselves.
+        """
+
+        if self.n == 1:
+            print("Cannot take self-dual basis of a prime field.")
+            return
+
+        # Make sure we have enough basis elements
+        if len(sdb_element_indices) != self.n:
+            print("Error, not enough elements in provided sdb.")
+            return
+
+        # If all goes well, we can start computing the coefficients
+        # in terms of the new elements by using the trace and multiplication
+        # functions.
+        new_elements = []
+
+        sdb = [self.elements[sdb_element_indices[i]] for i in range(0, self.n)]
+
+        for element in self.elements:
+            sdb_coefs = [] # Expansion coefficients in the sdb
+
+            for basis_el in sdb:
+                sdb_coefs.append(tr(element * basis_el))
+
+            new_elements.append(FieldElement(self.n, self.p, sdb_coefs))
+
+        for element in new_elements:
+            element.field_list = new_elements
+    
+        self.elements = new_elements
+
+        is_sdb = True
+
+
     def print(self):
+        """ Print out a wealth of useful information about the field."""
+        
         print("--- Galois field information ---")
         print("p = " + str(self.p))
 
@@ -146,11 +196,8 @@ class GaloisField():
             element.print()
 
 
-"""
-Wrapper for the trace function so the user can choose to do
-tr(x) or x.trace()
-"""
 def tr(x):
+    """ Wrapper trace function so the user can do tr(x) or x.trace()."""
     # Make sure x is a field element
     if type(x) is not FieldElement:
         print("Error, invalid argument to function 'tr'.")
@@ -159,11 +206,8 @@ def tr(x):
         return x.tr()
 
 
-"""
-Wrapper for the inverse function so we can do x.inv()
-or inv(x) interchangeably.
-"""
 def inv(x):
+    """ Wrapper so the user can do x.inv() or inv(x) interchangeably."""
     # Make sure x is a field element
     if type(x) is not FieldElement:
         print("Error, invalid argument to function 'inv'.")
