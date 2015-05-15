@@ -27,8 +27,8 @@ class GaloisField():
     dim - The dimension of the space, p^n
     coefs - The coefficients of the irreducible polynomial
     elements - A list of all elements in the finite field, of class FieldElement
-    is_sdb - A boolean which tells us whether the expansions are in the self-dual
-             basis (True) or the polynomial basis (False). The default is False.
+    bool_sdb - A boolean which tells us whether the expansions are in the self-dual
+               basis (True) or the polynomial basis (False). The default is False.
     """
     def __init__(self, p, n = 1, coefs = []):
         # TODO implement check for prime number
@@ -113,7 +113,7 @@ class GaloisField():
                 element.field_list = self.elements
 
         # By default, we are using the polynomial basis
-        is_sdb = False
+        self.bool_sdb = False
 
 
     def __getitem__(self, index):
@@ -136,9 +136,8 @@ class GaloisField():
             print("Cannot take self-dual basis of a prime field.")
             return
 
-        # Make sure we have enough basis elements
-        if len(sdb_element_indices) != self.n:
-            print("Error, not enough elements in provided sdb.")
+        if self.verify_sdb(sdb_element_indices) == False:
+            print("Invalid self-dual basis provided.")
             return
 
         # If all goes well, we can start computing the coefficients
@@ -161,7 +160,45 @@ class GaloisField():
     
         self.elements = new_elements
 
-        is_sdb = True
+        self.bool_sdb = True
+
+
+    def is_sdb(self):
+        """ Query the field to determine if we're in sdb or polynomial basis."""
+        return self.bool_sdb
+
+
+    def verify_sdb(self, sdb_element_indices):
+        """ Verify if a set of elements form a self-dual basis.
+
+        Check two things here:
+        - The trace of each basis element with itself is 1.
+        - The trace of each basis element with every other is 0 (orthogonality). 
+
+        Return True if it's a self-dual basis, False if not.
+        """
+        if len(sdb_element_indices) != self.n:
+            print("Error, incorrect number of elements in proposed basis.")
+            return False
+
+        for i in range(0, self.n):
+            for j in range(i, self.n): # Don't double compute things
+                trace_result = tr(self.elements[sdb_element_indices[i]] * self.elements[sdb_element_indices[j]])
+
+                if i == j: # Same element, should have trace 1
+                    if trace_result != 1:
+                        return False
+                else: # Different elements should be orthogonal and have trace 0
+                    if trace_result != 0:
+                        return False
+
+        return True
+
+
+    def compute_sdb(self):
+        """ Compute a self-dual basis for this field."""
+        # TODO 
+        return
 
 
     def print(self):
