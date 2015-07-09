@@ -27,8 +27,8 @@ class GaloisField():
     dim - The dimension of the space, p^n
     coefs - The coefficients of the irreducible polynomial
     elements - A list of all elements in the finite field, of class FieldElement
-    is_sdb - A boolean which tells us whether the expansions are in the self-dual
-             basis (True) or the polynomial basis (False). The default is False.
+    bool_sdb - A boolean which tells us whether the expansions are in the self-dual
+               basis (True) or the polynomial basis (False). The default is False.
     """
     def __init__(self, p, n = 1, coefs = []):
         # TODO implement check for prime number
@@ -77,19 +77,25 @@ class GaloisField():
             # the elements as:
             # 0 -> [0, 0], 1 -> [1, 0], x -> [1, 0], x^2 = [1, 1]
 
+            # Hold all the coefficients for each element
+            field_list = []
+
             # The polynomial basis contains n elements
             # The first element is always 0
             self.elements = []
             self.elements.append(FieldElement(self.p, self.n, [0]*self.n))
+            field_list.append([0]*self.n)
 
             # The next few elements are initial terms in the poly basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
                 self.elements.append(FieldElement(self.p, self.n, next_coefs))
+                field_list.append(next_coefs)
 
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
             self.elements.append(FieldElement(self.p, self.n, nth_coefs))
+            field_list.append(nth_coefs)
 
             # For the remaining powers, multiply the previous element by primitive element
             for el in range(self.n + 1, self.dim):
@@ -106,14 +112,15 @@ class GaloisField():
                     sum = sum + sum_el
 
                 self.elements.append(sum)
+                field_list.append(sum.exp_coefs)
                  
             # This is really dumb, but make sure each element holds a copy of the whole
             # list of the field elements. This makes field multiplication way easier.
             for element in self.elements:
-                element.field_list = self.elements
+                element.field_list = field_list 
 
         # By default, we are using the polynomial basis
-        is_sdb = False
+        self.bool_sdb = False
 
 
     def __getitem__(self, index):
@@ -144,9 +151,117 @@ class GaloisField():
             print("Cannot take self-dual basis of a prime field.")
             return
 
-        # Make sure we have enough basis elements
+        if self.verify_sdb(sdb_element_indices) == False:
+            print("Invalid self-dual basis provided.")
+            return
+
+
+        # If all goes well, we can start computing the coefficients
+        # in terms of the new elements by using the trace and multiplication
+        # functions.
+        new_elements = []
+        field_list = []
+
+        sdb = [self.elements[sdb_element_indices[i]] for i in range(0, self.n)]
+
+        for element in self.elements:
+            sdb_coefs = [] # Expansion coefficients in the sdb
+
+            print("On element")
+            element.print()
+            print(type(element))
+
+            for basis_el in sdb:
+                print(type(element * basis_el))
+                sdb_coefs.append(tr(element * basis_el))
+
+            new_elements.append(FieldElement(self.p, self.n, sdb_coefs))
+            field_list.append(sdb_coefs)
+
+
+        for element in new_elements:
+            element.field_list = field_list
+    
+        self.elements = new_elements
+
+        self.bool_sdb = True
+
+
+    def is_sdb(self):
+        """ Query the field to determine if we're in sdb or polynomial basis."""
+        return self.bool_sdb
+
+
+    def verify_sdb(self, sdb_element_indices):
+        """ Verify if a set of elements form a self-dual basis.
+
+        Check two things here:
+        - The trace of each basis element with itself is 1.
+        - The trace of each basis element with every other is 0 (orthogonality). 
+
+        Return True if it's a self-dual basis, False if not.
+        """
         if len(sdb_element_indices) != self.n:
-            print("Error, not enough elements in provided sdb.")
+            print("Error, incorrect number of elements in proposed basis.")
+            return False
+
+        for i in range(0, self.n):
+            for j in range(i, self.n): # Don't double compute things
+                trace_result = tr(self.elements[sdb_element_indices[i]] * self.elements[sdb_element_indices[j]])
+
+                if i == j: # Same element, should have trace 1
+                    if trace_result != 1:
+                        return False
+                else: # Different elements should be orthogonal and have trace 0
+                    if trace_result != 0:
+                        return False
+
+        return True
+
+
+    def compute_sdb(self):
+        """ Compute a self-dual basis for this field."""
+
+        # Compute a short list who's trace of their square is equal to 1
+        first_round = []   
+        for element in self.elements:
+            if tr(element * element) == 1:
+                first_round.append(element)
+    
+        for element in first_round:
+            print(element)
+
+        second_round = []
+
+        # Of the remaining possible elements, compute traces and see 
+        # if we can find n of them which equal 0
+        for i in range(0, len(first_round)):
+            traces = [tr(first_round[i] * first_round[j]) for j in range(0, len(first_round))] 
+            if traces.count(0) == self.n:
+                second_round.append(first_round[i])
+                print(traces)
+
+        print(second_round)
+
+        return
+
+    def to_poly(self):
+        """ Transform the expansions coefficients to the polynomial basis.
+
+        Broken!! Do not use this yet.
+        Only needs to be done if we are currently in the self-dual basis.
+        """
+
+        print("Do not use me yet!")
+        return
+
+        """
+        if self.n == 1:
+            print("Cannot take self-dual basis of a prime field.")
+            return
+
+        if self.bool_sdb == False:
+            print("Already in the polynomial basis!")
             return
 
         # If all goes well, we can start computing the coefficients
@@ -154,23 +269,21 @@ class GaloisField():
         # functions.
         new_elements = []
 
-        sdb = [self.elements[sdb_element_indices[i]] for i in range(0, self.n)]
+        poly_basis = [self.elements[-1]] + self.elements[1:self.n]
 
         for element in self.elements:
-            sdb_coefs = [] # Expansion coefficients in the sdb
+            poly_coefs = [] # Expansion coefficients in the sdb
 
-            for basis_el in sdb:
-                sdb_coefs.append(tr(element * basis_el))
+            for basis_el in poly_basis:
+                poly_coefs.append(tr(element * basis_el))
 
-            new_elements.append(FieldElement(self.n, self.p, sdb_coefs))
+            new_elements.append(FieldElement(self.p, self.n, poly_coefs))
 
         for element in new_elements:
             element.field_list = new_elements
     
         self.elements = new_elements
-
-        is_sdb = True
-
+        """
 
     def print(self):
         """ Print out a wealth of useful information about the field."""
