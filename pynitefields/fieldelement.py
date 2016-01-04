@@ -22,6 +22,8 @@ class FieldElement():
     dim - The full dimension of the field p^n
     exp_coefs - A list of expansion coefficients in the basis of choice
                 (determined by the parent GaloisField class)
+    str_rep   - A representation of this elements basis coefficients as a string
+                (just the string version of exp_coefs)
     field_list - A copy of the list of all elements in the parent GaloisField.
                  Inclusion of this parameter is not ideal, but greatly
                  simplifies the implementation of many of the arithmetic 
@@ -47,6 +49,7 @@ class FieldElement():
         # If we're in a prime field, the basis is 1, and
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
+        self.str_rep = "".join([str(x) for x in exp_coefs])
 
         # This gets set by the GaloisField constructor after
         # ALL the field elements have been created. This is set only
@@ -135,8 +138,8 @@ class FieldElement():
             else:
                 # I stored the whole list of field elements in each element for a reason...
                 # Now we can multiply really easily
-                power_self = self.field_list.index(self.exp_coefs)
-                power_el = self.field_list.index(el.exp_coefs)
+                power_self = self.field_list.index(self.str_rep)
+                power_el = self.field_list.index(el.str_rep)
 
                 if power_el == 0 or power_self == 0: # Multiplying by 0, nothing to see here
                     return FieldElement(self.p, self.n, self.field_list[0], self.field_list)
@@ -147,7 +150,8 @@ class FieldElement():
                     # the last field element is 1.
                     if new_exp > self.dim - 1: 
                         new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-                    return FieldElement(self.p, self.n, self.field_list[new_exp], self.field_list)
+                    new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
+                    return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
         else:
             raise TypeError("Unsupported operator")
 
@@ -172,7 +176,7 @@ class FieldElement():
 
             # Power of prime
             else:
-                if self.field_list.index(self.exp_coefs) == 0:
+                if self.field_list.index(self.str_rep) == 0:
                     print("Error! Cannot divide by 0, silly.")
                     return
 
@@ -191,10 +195,11 @@ class FieldElement():
             return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p])
         # Power of prime case
         else:
-            new_exp = self.field_list.index(self.exp_coefs) * exponent
+            new_exp = self.field_list.index(self.str_rep) * exponent
             if new_exp > self.dim - 1:
                 new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-            return FieldElement(self.p, self.n, self.field_list[new_exp], self.field_list)
+            new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
+            return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
             
 
     def __repr__(self):
@@ -221,16 +226,18 @@ class FieldElement():
                 if (self.exp_coefs[0] * i) % self.p == 1:
                     return FieldElement(self.p, self.n, [i])
         else:
-            my_index = self.field_list.index(self.exp_coefs)
+            my_index = self.field_list.index(self.str_rep)
             if my_index == 0:
                 print("Error, 0 has no multiplicative inverse.")
                 return 
             # Last element is always 1 which is it's own inverse
             elif my_index == self.dim - 1:
-                return FieldElement(self.p, self.n, self.field_list[self.dim - 1], self.field_list)
+                new_exp_coefs = [int(x) for x in self.field_list[self.dim - 1]]
+                return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
             # All other elements, find exponent which sums to dim - 1
             else:
-                return FieldElement(self.p, self.n, self.field_list[self.dim - my_index - 1], self.field_list)
+                new_exp_coefs = [int(x) for x in self.field_list[self.dim - my_index - 1]]
+                return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
 
 
     def tr(self):

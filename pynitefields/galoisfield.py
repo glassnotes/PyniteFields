@@ -78,24 +78,26 @@ class GaloisField():
             # 0 -> [0, 0], 1 -> [1, 0], x -> [1, 0], x^2 = [1, 1]
 
             # Hold all the coefficients for each element
+            # For simplicity, rather than a list of list, represent each field element as a 
+            # string of coefficients, i.e. [0, 1, 1] -> "011"  
             field_list = []
 
             # The polynomial basis contains n elements
             # The first element is always 0
             self.elements = []
             self.elements.append(FieldElement(self.p, self.n, [0]*self.n))
-            field_list.append([0]*self.n)
+            field_list.append("0" * self.n)
 
             # The next few elements are initial terms in the poly basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
                 self.elements.append(FieldElement(self.p, self.n, next_coefs))
-                field_list.append(next_coefs)
+                field_list.append("".join([str(x) for x in next_coefs]))
 
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
             self.elements.append(FieldElement(self.p, self.n, nth_coefs))
-            field_list.append(nth_coefs)
+            field_list.append("".join([str(x) for x in nth_coefs]))
 
             # For the remaining powers, multiply the previous element by primitive element
             for el in range(self.n + 1, self.dim):
@@ -111,8 +113,10 @@ class GaloisField():
                 for sum_el in which_to_sum:
                     sum = sum + sum_el
 
+                # TODO Make sure that this element is not already in the list - if it is, then
+                # we did not use a true primitive polynomial.
                 self.elements.append(sum)
-                field_list.append(sum.exp_coefs)
+                field_list.append("".join([str(x) for x in sum.exp_coefs]))
                  
             # This is really dumb, but make sure each element holds a copy of the whole
             # list of the field elements. This makes field multiplication way easier.
@@ -176,7 +180,7 @@ class GaloisField():
                 sdb_coefs.append(tr(element * basis_el))
 
             new_elements.append(FieldElement(self.p, self.n, sdb_coefs))
-            field_list.append(sdb_coefs)
+            field_list.append("".join([str(x) for x in sdb_coefs]))
 
 
         for element in new_elements:
