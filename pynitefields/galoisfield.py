@@ -51,7 +51,6 @@ class GaloisField():
 
         # Initialize the coefficients for the irreducible polynomial 
         # to do the field extension with. 
-        # TODO check for valid polynomials
         if len(coefs) > 0:
             # We should have n + 1 coefficients for GF(p^n)
             if len(coefs) == n + 1:
@@ -115,13 +114,18 @@ class GaloisField():
 
                 # TODO Make sure that this element is not already in the list - if it is, then
                 # we did not use a true primitive polynomial.
-                self.elements.append(sum)
-                field_list.append("".join([str(x) for x in sum.exp_coefs]))
+                str_rep = "".join([str(x) for x in sum.exp_coefs])
+                if str_rep not in field_list:
+                    self.elements.append(sum)
+                    field_list.append(str_rep)
+                else:
+                    raise ValueError("Repeated field element detected; please make sure your irreducible polynomial is primitive.")
                  
             # This is really dumb, but make sure each element holds a copy of the whole
             # list of the field elements. This makes field multiplication way easier.
-            for element in self.elements:
-                element.field_list = field_list 
+            for i in range(len(self.elements)):
+                (self.elements[i]).field_list = field_list 
+                (self.elements[i]).prim_power = i
 
         # By default, we are using the polynomial basis
         self.bool_sdb = False
