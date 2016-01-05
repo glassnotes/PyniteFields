@@ -70,17 +70,18 @@ Some functionality which has yet to be implemented is:
 
 =============================================================================
 Below are some commonly used irreducible polynomials, and corresponding self-dual normal bases (where applicable):
-Dimension | Polynomial | Self-dual basis
-----------|------------|-----------------
-4 | [1, 1, 1] | [1, 2]
-8 | [1, 1, 0, 1] | [3, 5, 6]
-8 | [1, 0, 1, 1] | [1, 2, 4]
-9 | [2, 1, 1] | No normal basis
-9 | [2, 2, 1] | No normal basis
-16 | [1, 1, 0, 0, 1] | [3, 7, 12, 13]
-27 | [1, 2, 0, 1] | No normal basis
-32 | [1, 0, 1, 0, 0, 1] | [3, 5, 11, 22, 24]
-256 | [1, 0, 1, 1, 1, 0, 0, 0, 1] | [5, 18, 30, 44, 106, 135, 147, 249] (Thanks Markus!)
+
+| Dimension | Polynomial | Self-dual basis |
+| --------- | ---------- | --------------- |
+| 4   | [1, 1, 1]                   | [1, 2] |
+| 8   | [1, 1, 0, 1]                | [3, 5, 6] |
+| 8   | [1, 0, 1, 1]                | [1, 2, 4] |
+| 9   | [2, 1, 1]                   | No s.d. normal basis |
+| 9   | [2, 2, 1]                   | No s.d. normal basis |
+| 16  | [1, 1, 0, 0, 1]             | [3, 7, 12, 13]  |
+| 27  | [1, 2, 0, 1]                | No s.d. normal basis |  
+| 32  | [1, 0, 1, 0, 0, 1]          | [3, 5, 11, 22, 24] |
+| 256 | [1, 0, 1, 1, 1, 0, 0, 0, 1] | [5, 18, 30, 44, 106, 135, 147, 249] (Thanks Markus!) |
 
 =============================================================================
 
