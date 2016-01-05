@@ -139,14 +139,6 @@ class GaloisField():
             print("Error, element out of bounds.")
 
 
-    def primitive_power(self, field_el):
-        if field_el in self.elements:
-            return self.elements.index(field_el)
-        else:
-            print("Error, element not found in field.")
-            return None
-
-
     def to_sdb(self, sdb_element_indices):
         """ Transform the expansions coefficients to the self-dual basis.
 
