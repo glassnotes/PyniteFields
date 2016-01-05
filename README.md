@@ -7,7 +7,7 @@ FiniteFields package, which is pretty great (except then you have to write every
 You can install PyniteFields as follows:
 ```
 cd PyniteFields
-python setup.py install
+python3 setup.py install
 ```
 
 All operations are done with a single object of the class GaloisField. 
@@ -21,7 +21,7 @@ gf = GaloisField(5)
 To create a field with power of prime order you'll need 3 things:
 - A base prime _p_,
 - An exponent _n_ such that the field has order _p<sup>n</sup>_,
-- Coefficients for an irreducible polynomial with degree _n_.
+- Coefficients for a primitive, irreducible polynomial with degree _n_.
 
 For example, suppose we want to create the field GF(8). We know the irreducible polynomial
 _1 + x + x<sup>3</sup>_, so we put it's coefficients into a list: [1, 1, 0, 1]. The _i_<sup>th</sup>
@@ -48,12 +48,14 @@ single item list. For power of primes, let's go back
 to our example of dimension 8. Element _x<sup>3</sup>_ can be expressed as 1 + _x_, so 
 it is stored as the list [1, 1, 0].
 
-We can sum, subtract, multiply field elements, and take their power:
+We can perform all four arithmetic operations on field elements, and take their powers and inverses:
 ```
 gf[3] + gf[5]
 gf[2] - gf[7]
 gf[4] * gf[1]
+gf[1] / gf[6]
 pow(gf[4], 3)
+inv(gf[2])
 ```
 
 We can also take the trace, which is quite a useful operation:
@@ -65,4 +67,21 @@ tr(gf[2])  # Same as above, but more convenient to write
 Some functionality which has yet to be implemented is:
 - Finding the self-dual basis (when possible)
 - Transforming the field such that the elements are expressed in the self-dual basis
+
+=============================================================================
+Below are some commonly used irreducible polynomials, and corresponding self-dual normal bases (where applicable):
+Dimension | Polynomial | Self-dual basis
+----------|------------|-----------------
+4 | [1, 1, 1] | [1, 2]
+8 | [1, 1, 0, 1] | [3, 5, 6]
+8 | [1, 0, 1, 1] | [1, 2, 4]
+9 | [2, 1, 1] | No normal basis
+9 | [2, 2, 1] | No normal basis
+16 | [1, 1, 0, 0, 1] | [3, 7, 12, 13]
+27 | [1, 2, 0, 1] | No normal basis
+32 | [1, 0, 1, 0, 0, 1] | [3, 5, 11, 22, 24]
+256 | [1, 0, 1, 1, 1, 0, 0, 0, 1] | [5, 18, 30, 44, 106, 135, 147, 249] (Thanks Markus!)
+
+=============================================================================
+
 
