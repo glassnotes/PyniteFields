@@ -139,6 +139,11 @@ class GaloisField():
             print("Error, element out of bounds.")
 
 
+    def __iter__(self):
+        """ Make the finite field iterable; return an iterator to the field elements."""
+        return iter(self.elements)
+
+
     def to_sdb(self, sdb_element_indices):
         """ Transform the expansions coefficients to the self-dual basis.
 
