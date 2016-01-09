@@ -88,8 +88,16 @@ evaluate() function of the field and provide information about the coefficients 
 ```
 gf = GaloisField(2, 3, [1, 1, 0, 1])
 curve = [gf[2], gf[3], 0, gf[5]]
-f.evaluate(curve, gf[6]) # Should result in gf[2]
+gf.evaluate(curve, gf[6]) # Should result in gf[2]
 ```
+In general, for a curve
+_b_(_a_) = c<sub>0</sub> + c<sub>1</sub> a + ... + c<sub>k</sub> a<sup>k</sub>,
+we should feed evaluate a curve which has list form  
+
+curve = [c<sub>0</sub>, c<sub>1</sub>, ..., c<sub>k</sub>].
+
+For coefficients which are essentially integers, you can simply put the integer rather
+than specifying it as a field element (e.g. [f[1], f[2], 2]).
 
 =============================================================================
 
