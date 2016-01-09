@@ -129,11 +129,10 @@ class FieldElement():
             else:
                 # I stored the whole list of field elements in each element for a reason...
                 # Now we can multiply really easily
-                power_self = self.field_list.index(self.str_rep)
-                power_el = self.field_list.index(el.str_rep)
 
                 if el.prim_power == 0 or self.prim_power == 0: # Multiplying by 0, nothing to see here
-                    return FieldElement(self.p, self.n, self.field_list[0], self.field_list)
+                    new_exp_coefs = [int(x) for x in self.field_list[0]] 
+                    return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
                 else:
                     new_exp = self.prim_power + el.prim_power # New exponent
                     # If the exponent calculated is outside the range of primitive element
