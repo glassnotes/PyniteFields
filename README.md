@@ -95,6 +95,8 @@ f.evaluate(curve, gf[6]) # Should result in gf[2]
 
 Some functionality which has yet to be implemented is:
 - Finding the self-dual basis (when possible)
+- to_poly(), the companion to to_sdb(), which will switch you back to the polynomial basis.
+- Matrix representations of finite field elements.
 
 =============================================================================
 Below are some commonly used irreducible polynomials, and corresponding self-dual normal bases (where applicable):
