@@ -79,6 +79,8 @@ class FieldElement():
             # Coefficients simply add modulo p
             new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
             return FieldElement(self.p, self.n, new_coefs, self.field_list)
+
+
     
 
     def __sub__(self, el):
@@ -167,6 +169,27 @@ class FieldElement():
                     return
             # Actually do the division 
             return self * el.inv()
+
+
+    # Operations with assignment
+    def __iadd__(self, el):
+        """ Addition with assignment. """
+        return self + el
+
+
+    def __isub__(self, el):
+        """ Subtraction with assignment. """
+        return self - el
+
+
+    def __imul__(self, el):
+        """ Multiplication with assignment. """
+        return self * el
+
+
+    def __itruediv__(self, el):
+        """ Division with assignment. """
+        return self / el
 
 
     def __pow__(self, exponent):
