@@ -145,6 +145,10 @@ class FieldElement():
         else:
             raise TypeError("Unsupported operator")
 
+    def __rmul__(self, el): # Implementing rmul so we can multiply on the left by integers
+        return self * el
+        #if isinstance(el, int):
+        #    return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] , self    .field_list)
  
     def __truediv__(self, el):
         """ Division.

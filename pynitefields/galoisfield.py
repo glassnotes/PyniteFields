@@ -290,19 +290,19 @@ class GaloisField():
         self.elements = new_elements
         """
 
-    def evaluate(self, poly_coefs, argument):
+    def evaluate(self, coefs, argument):
         """ Evaluate the effect of a curve on a finite field element.
             The information about the curve is stored in the poly_coefs
             argument. For example, if we wish to evaluate the curve
-            beta(alpha) = f[3] + f[2] alpha + f[5] alpha^2 on the field
+            beta(alpha) = f[3] + 2 alpha + f[5] alpha^2 on the field
             element f[1], then we would call this function as
 
-            f.evaluate([3, 2, 5], 1)
+            f.evaluate([f[3], 2, f[5]], f[1])
         """
-        result = self.elements[0]
+        result = coefs[0] 
 
-        for idx in range(len(poly_coefs)):
-            result += self.elements[poly_coefs[idx]] * pow(argument, idx)
+        for coef_idx in range(1, len(coefs)):
+            result += coefs[coef_idx] * pow(argument, coef_idx)
         return result
 
     def print(self):

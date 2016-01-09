@@ -64,9 +64,37 @@ gf[2].tr()
 tr(gf[2])  # Same as above, but more convenient to write
 ``` 
 
+=============================================================
+Some more complicated functionality...
+
+It is possible to convert the field such that all the elements are expanded in terms of a
+self-dual basis rather than the polynomial basis. For example, suppose we are working in GF(4).
+The elements _x_ and _x_<sup>2</sup> comprise a self-dual basis. To convert the field we can do
+```
+gf = GaloisField(2, 2, [1, 1, 1])
+gf.to_sdb([1, 2])
+```
+Currenty, the program does not compute a self-dual basis for you - you will have to provide one yourself.
+Here, to_sdb() takes as an argument a list of powers of the primitive element which
+make up the self-dual basis. For more examples, see the table below.  
+
+
+PyniteFields can evaluate functions, or curves, over field elements. Suppose you have some function  
+ 
+_b_(_a_) = _x_<sup>2</sup> + _x_<sup>3</sup> a + _x_<sup>5</sup> _a_ <sup>3</sup>  
+
+which you would like to evaluate on the field element _x_<sup>6</sup> over GF(8). One can use the 
+evaluate() function of the field and provide information about the coefficients of the curve.
+```
+gf = GaloisField(2, 3, [1, 1, 0, 1])
+curve = [gf[2], gf[3], 0, gf[5]]
+f.evaluate(curve, gf[6]) # Should result in gf[2]
+```
+
+=============================================================================
+
 Some functionality which has yet to be implemented is:
 - Finding the self-dual basis (when possible)
-- Transforming the field such that the elements are expressed in the self-dual basis
 
 =============================================================================
 Below are some commonly used irreducible polynomials, and corresponding self-dual normal bases (where applicable):
