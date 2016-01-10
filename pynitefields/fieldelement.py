@@ -217,6 +217,17 @@ class FieldElement():
                 new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
             return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
             
+    def __eq__(self, el):
+        # Test equality of two field elements
+        if (self.p != el.p) or (self.n != el.n):
+            return False
+        if self.exp_coefs != el.exp_coefs:
+            return False
+        if self.field_list != el.field_list:
+            return False
+        return True
+
+
 
     def __repr__(self):
         """ Make the field element get printed in the command line."""
@@ -263,12 +274,10 @@ class FieldElement():
         """
         sum = self
 
-        if self.n == 1:
-            return sum
-        else:
+        if self.n > 1:
             for i in range(1, self.n):
                 sum = sum + pow(self, pow(self.p, i))
-            return sum.exp_coefs[0]
+        return sum.exp_coefs[0]
 
 
     def print(self):
