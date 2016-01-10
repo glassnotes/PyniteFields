@@ -178,11 +178,11 @@ class GaloisField():
             new_elements.append(FieldElement(self.p, self.n, sdb_coefs))
             field_list.append("".join([str(x) for x in sdb_coefs]))
 
-
-        for element in new_elements:
-            element.field_list = field_list
-    
         self.elements = new_elements
+        for i in range(len(self.elements)):
+            (self.elements[i]).field_list = field_list 
+            (self.elements[i]).prim_power = i
+    
 
         self.bool_sdb = True
 
@@ -295,8 +295,10 @@ class GaloisField():
             f.evaluate([f[3], 2, f[5]], f[1])
         """
         result = coefs[0] * self.elements[-1] 
+        print(result)
         for coef_idx in range(1, len(coefs)):
             result += coefs[coef_idx] * pow(argument, coef_idx)
+            print(result)
         return result
 
     def print(self):

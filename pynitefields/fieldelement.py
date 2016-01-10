@@ -208,7 +208,7 @@ class FieldElement():
         # Power of prime case
         else:
             new_exp_coefs = []
-            if exponent == 0: # Any element to the 0 is 0 by convention 
+            if self.prim_power == 0 or exponent == 0: # 0, and any element to the 0 is 0 by convention 
                 new_exp_coefs = [int(x) for x in self.field_list[0]]
             else:
                 new_exp = self.prim_power * exponent
