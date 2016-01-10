@@ -206,10 +206,14 @@ class FieldElement():
             return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p])
         # Power of prime case
         else:
-            new_exp = self.prim_power * exponent
-            if new_exp > self.dim - 1:
-                new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-            new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
+            new_exp_coefs = []
+            if exponent == 0: # Any element to the 0 is 11
+                new_exp_coefs = [int(x) for x in self.field_list[-1]]
+            else:
+                new_exp = self.prim_power * exponent
+                if new_exp > self.dim - 1:
+                    new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
+                new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
             return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
             
 
