@@ -247,43 +247,10 @@ class GaloisField():
 
     def to_poly(self):
         """ Transform the expansions coefficients to the polynomial basis.
-
-        Broken!! Do not use this yet.
-        Only needs to be done if we are currently in the self-dual basis.
+            I'm lazy, so just return a fresh field.
         """
+        self = GaloisField(self.p, self.n, self.coefs)
 
-        print("Do not use me yet!")
-        return
-
-        """
-        if self.n == 1:
-            print("Cannot take self-dual basis of a prime field.")
-            return
-
-        if self.bool_sdb == False:
-            print("Already in the polynomial basis!")
-            return
-
-        # If all goes well, we can start computing the coefficients
-        # in terms of the new elements by using the trace and multiplication
-        # functions.
-        new_elements = []
-
-        poly_basis = [self.elements[-1]] + self.elements[1:self.n]
-
-        for element in self.elements:
-            poly_coefs = [] # Expansion coefficients in the sdb
-
-            for basis_el in poly_basis:
-                poly_coefs.append(tr(element * basis_el))
-
-            new_elements.append(FieldElement(self.p, self.n, poly_coefs))
-
-        for element in new_elements:
-            element.field_list = new_elements
-    
-        self.elements = new_elements
-        """
 
     def evaluate(self, coefs, argument):
         """ Evaluate the effect of a curve on a finite field element.
@@ -295,10 +262,8 @@ class GaloisField():
             f.evaluate([f[3], 2, f[5]], f[1])
         """
         result = coefs[0] * self.elements[-1] 
-        print(result)
         for coef_idx in range(1, len(coefs)):
             result += coefs[coef_idx] * pow(argument, coef_idx)
-            print(result)
         return result
 
     def print(self):

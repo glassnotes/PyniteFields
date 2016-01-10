@@ -6,6 +6,6 @@ setup(name='pynitefields',
       url='https://github.com/glassnotes/PyniteFields',
       author='Olivia Di Matteo',
       author_email='odimatte@uwaterloo.ca',
-      license='GNU GPL v3',
+      license='BSD',
       packages=['pynitefields'],
       zip_safe=False)
