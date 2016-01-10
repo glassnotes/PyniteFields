@@ -299,8 +299,8 @@ class GaloisField():
 
             f.evaluate([f[3], 2, f[5]], f[1])
         """
-        result = self.elements[0]
-        for coef_idx in range(len(coefs)):
+        result = coefs[0] * self.elements[-1] 
+        for coef_idx in range(1, len(coefs)):
             result += coefs[coef_idx] * pow(argument, coef_idx)
         return result
 

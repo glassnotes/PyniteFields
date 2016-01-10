@@ -199,7 +199,8 @@ class FieldElement():
         """ Exponentiation.
 
         Compute the power self^exponent. Simple modulo for primes, 
-        need to wrap around the exponents for power of primes.
+        need to wrap around the exponents for power of primes. For power of primes,
+        we conventionally consider the primitive element to the 0'th power to be 0.
         """
         # Prime case
         if self.n == 1:
@@ -207,8 +208,8 @@ class FieldElement():
         # Power of prime case
         else:
             new_exp_coefs = []
-            if exponent == 0: # Any element to the 0 is 11
-                new_exp_coefs = [int(x) for x in self.field_list[-1]]
+            if exponent == 0: # Any element to the 0 is 0 by convention 
+                new_exp_coefs = [int(x) for x in self.field_list[0]]
             else:
                 new_exp = self.prim_power * exponent
                 if new_exp > self.dim - 1:

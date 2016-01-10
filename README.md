@@ -57,6 +57,7 @@ gf[1] / gf[6]
 pow(gf[4], 3)
 inv(gf[2])
 ```
+Note that by convention, we take the 0'th power of the primitive element to be 0.
 
 We can also take the trace, which is quite a useful operation:
 ```
@@ -93,9 +94,9 @@ gf.evaluate(curve, gf[6]) # Should result in gf[2]
 In general, for a curve
 _b_(_a_) = _c_<sub>0</sub> + _c_<sub>1</sub> _a_ + ... + _c_<sub>_k_</sub> _a_<sup>k</sup>,
 we should feed evaluate a curve which has list form  
-
+```
 curve = [_c_<sub>0</sub>, _c_<sub>1</sub>, ..., _c_<sub>_k_</sub>].
-
+```
 For coefficients which are essentially integers, you can simply put the integer rather
 than specifying it as a field element (e.g. [f[1], f[2], 2]).
 
