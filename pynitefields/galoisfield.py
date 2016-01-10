@@ -172,12 +172,7 @@ class GaloisField():
         for element in self.elements:
             sdb_coefs = [] # Expansion coefficients in the sdb
 
-            print("On element")
-            element.print()
-            print(type(element))
-
             for basis_el in sdb:
-                print(type(element * basis_el))
                 sdb_coefs.append(tr(element * basis_el))
 
             new_elements.append(FieldElement(self.p, self.n, sdb_coefs))
