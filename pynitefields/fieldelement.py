@@ -52,6 +52,11 @@ class FieldElement():
         self.prim_power = -1
         self.field_list = []
 
+        # Prim power doesn't really make sense for prime, but set it here
+        # so that we can make the rest of the code more general
+        if self.n == 1:
+            self.prim_power = exp_coefs[0]
+
         # This gets set by the GaloisField constructor after
         # ALL the field elements have been created. This is set only
         # for power of prime fields.
@@ -74,7 +79,7 @@ class FieldElement():
 
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, [(self.exp_coefs[0] + el.exp_coefs[0]) % self.p])
+            return FieldElement(self.p, self.n, [(self.prim_power + el.prim_power) % self.p])
         else: # Power of prime case
             # Coefficients simply add modulo p
             new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
@@ -97,7 +102,7 @@ class FieldElement():
 
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, [(self.exp_coefs[0] - el.exp_coefs[0]) % self.p])
+            return FieldElement(self.p, self.n, [(self.prim_power - el.prim_power) % self.p])
         else:  # Power of prime case
             # Coefficients subtract modulo p
             new_coefs = [(self.exp_coefs[i] - el.exp_coefs[i]) % self.p for i in range(0, self.n)]
@@ -124,7 +129,7 @@ class FieldElement():
 
             # Prime case
             if self.n == 1:
-                return FieldElement(self.p, self.n, [(self.exp_coefs[0] * el.exp_coefs[0]) % self.p])
+                return FieldElement(self.p, self.n, [(self.prim_power * el.prim_power) % self.p])
             # Power of prime case
             else:
                 # I stored the whole list of field elements in each element for a reason...
@@ -162,7 +167,7 @@ class FieldElement():
 
             # Prime
             if self.n == 1:
-                if self.exp_coefs[0] == 0:
+                if self.prim_power == 0:
                     print("Error! Cannot divide by 0, silly.")
                     return
             # Power of prime
@@ -204,7 +209,7 @@ class FieldElement():
         """
         # Prime case
         if self.n == 1:
-            return FieldElement(self.p, self.n, [int(math.pow(self.exp_coefs[0], exponent)) % self.p])
+            return FieldElement(self.p, self.n, [int(math.pow(self.prim_power, exponent)) % self.p])
         # Power of prime case
         else:
             new_exp_coefs = []
@@ -232,7 +237,7 @@ class FieldElement():
     def __repr__(self):
         """ Make the field element get printed in the command line."""
         if self.n == 1:
-            return str(self.exp_coefs[0])
+            return str(self.prim_power)
         else:
             return str(self.exp_coefs)
 
@@ -243,16 +248,15 @@ class FieldElement():
         Compute the multiplicative inverse of a field element.
         All elements have a multiplicative inverse except 0.
         """
-        # Prime case - brute force :(
-        if self.n == 1:
-            if self.exp_coefs[0] == 0:
+        if self.n == 1: # Prime case - brute force :(
+            if self.prim_power == 0:
                 print("Error, 0 has no multiplicative inverse.")
                 return
 
             for i in range(0, self.p):
-                if (self.exp_coefs[0] * i) % self.p == 1:
+                if (self.prim_power * i) % self.p == 1:
                     return FieldElement(self.p, self.n, [i])
-        else:
+        else: # Power of prime case
             if self.prim_power == 0:
                 print("Error, 0 has no multiplicative inverse.")
                 return 
@@ -283,6 +287,6 @@ class FieldElement():
     def print(self):
         """ Print out information about the element."""
         if self.n == 1:
-            print(self.exp_coefs[0])
+            print(self.prim_power)
         else:
             print(self.exp_coefs)
