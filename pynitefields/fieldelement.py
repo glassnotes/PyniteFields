@@ -278,7 +278,9 @@ class FieldElement():
         """
         sum = self
 
-        if self.n > 1:
+        if self.n == 1:
+            return self.prim_power
+        else:
             for i in range(1, self.n):
                 sum = sum + pow(self, pow(self.p, i))
         return sum.exp_coefs[0]
