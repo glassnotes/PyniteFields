@@ -276,8 +276,8 @@ class GaloisField():
             print("n = " + str(self.n))
 
             print("\nIrreducible polynomial: ", end = "")
-            if self.coefs[0] == 1:
-                print("1 + ", end ="")
+            if self.coefs[0] != 0:
+                print(str(self.coefs[0]) + " + ", end ="")
 
             for i in range(1, len(self.coefs)):
                 if self.coefs[i] != 0:
