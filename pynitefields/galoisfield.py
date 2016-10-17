@@ -308,6 +308,14 @@ def tr(x):
         return x.tr()
 
 
+def gchar(x):
+    if type(x) is not FieldElement:
+        print("Error, invalid argument to function 'gchar'.")
+        return None
+    else:
+        return x.gchar()
+
+
 def inv(x):
     """ Wrapper so the user can do x.inv() or inv(x) interchangeably."""
     # Make sure x is a field element

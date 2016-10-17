@@ -1,5 +1,7 @@
 import math
 
+from pynitefields.pthrootofunity import pthRootOfUnity
+
 class FieldElement():
     """ Class for an element in a finite field.
     
@@ -271,10 +273,10 @@ class FieldElement():
 
     def tr(self):
         """ Trace.
-
-        Compute the trace of a field element. The formula just relies on the pow function so
-        it has the same implementation for prime and powers of prime. The trace of any element 
-        should be an element of the base field for the power of prime case.
+        Compute the trace of a field element. Relies on the pow function so
+        it has the same implementation for prime and powers of prime. 
+        The trace of any element should be an element of the base field 
+        for the power of prime case.
         """
         sum = self
 
@@ -284,6 +286,14 @@ class FieldElement():
             for i in range(1, self.n):
                 sum = sum + pow(self, pow(self.p, i))
         return sum.exp_coefs[0]
+
+
+    def gchar(self):
+        """ The group character of an element is defined as the pth root of
+            unity to the power of the trace of the field element.
+        """
+        return pthRootOfUnity(self.p, self.tr())
+            
 
 
     def print(self):
