@@ -224,6 +224,7 @@ class FieldElement():
                 new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
             return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
             
+
     def __eq__(self, el):
         # Test equality of two field elements
         if (self.p != el.p) or (self.n != el.n):
@@ -235,6 +236,12 @@ class FieldElement():
         return True
 
 
+    def __lt__(self, el):
+        if self.prim_power < el.prim_power:
+            return True
+        else:
+            return False
+
 
     def __repr__(self):
         """ Make the field element get printed in the command line."""
@@ -242,6 +249,10 @@ class FieldElement():
             return str(self.prim_power)
         else:
             return str(self.exp_coefs)
+
+    def __hash__(self):
+        """ Make hashable so we can use these guys as dictionary keys."""
+        return hash(repr(self))
 
 
     def inv(self):
