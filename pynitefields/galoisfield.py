@@ -4,6 +4,7 @@ import sys
 import math
 
 from pynitefields.fieldelement import FieldElement
+from pynitefields.pthrootofunity import pthRootOfUnity
 
 class GaloisField():
     """
@@ -24,6 +25,7 @@ class GaloisField():
     GaloisField has a number of member variables:
     p - The prime dimension of the field
     n - The degree of the field extension (1 if just a prime field) 
+    w - The pth root of unity 
     dim - The dimension of the space, p^n
     coefs - The coefficients of the irreducible polynomial
     elements - A list of all elements in the finite field, of class FieldElement
@@ -48,6 +50,9 @@ class GaloisField():
         
         # Set separate parameter for the field dimension
         self.dim = int(math.pow(p, n))
+
+        # Initialize the pth root of unity
+        self.w = pthRootOfUnity(p)
 
         # Initialize the coefficients for the irreducible polynomial 
         # to do the field extension with. 
