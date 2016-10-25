@@ -88,6 +88,9 @@ class FieldElement():
             return FieldElement(self.p, self.n, new_coefs, self.field_list)
 
 
+    def __radd__(self, el):
+        """ Implementing this so we can use 'sum' over lists of field els. """
+        return self + el
     
 
     def __sub__(self, el):
