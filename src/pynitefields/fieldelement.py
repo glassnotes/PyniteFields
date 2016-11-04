@@ -240,10 +240,24 @@ class FieldElement():
 
 
     def __lt__(self, el):
-        if self.prim_power < el.prim_power:
-            return True
+        """ Implement a 'natural' ordering for field elements.
+            For prime fields, this is simply the ordering of natural numbers.
+            For power of primes, turn the coefficient lists into binary
+              strings, and order them this way. Doing this to allow for
+              Wigner functions to be plotted 'in order' in Balthasar.
+        """
+        if self.n == 1: 
+            if self.prim_power < el.prim_power:
+                return True
+            else:
+                return False
         else:
-            return False
+            this_exp_str = [str(x) for x in self.exp_coefs]
+            that_exp_str = [str(x) for x in el.exp_coefs]
+            if "".join(this_exp_str) < "".join(that_exp_str):
+                return True
+            else:
+                return False
 
 
     def __repr__(self):
@@ -306,7 +320,10 @@ class FieldElement():
         """ The group character of an element is defined as the pth root of
             unity to the power of the trace of the field element.
         """
-        return pthRootOfUnity(self.p, self.tr())
+        if self.p == 2:
+            return ((-1) **  self.tr())
+        else:
+            return pthRootOfUnity(self.p, self.tr())
             
 
 

@@ -7,5 +7,6 @@ setup(name='pynitefields',
       author='Olivia Di Matteo',
       author_email='odimatte@uwaterloo.ca',
       license='BSD',
+      package_dir={'':'src'},
       packages=['pynitefields'],
       zip_safe=False)
