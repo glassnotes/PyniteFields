@@ -7,30 +7,28 @@ from pynitefields.fieldelement import FieldElement
 from pynitefields.pthrootofunity import pthRootOfUnity
 
 class GaloisField():
-    """
-    Initialize the Galois Field based on user input.
+    """ A finite field, or Galois field.
 
-    Default parameters for a prime field, additional parameters are
-    for the case of a field extension.
+        Args:
+            p (int): A prime number, the base of the field.
+            n (int): An exponent representing the degree of a field extension.
+                     By default n = 1 (prime field).
+            coefs (list): A list of integers representing the coefficients of
+                          an irreducible primitive polynomial of degree n over
+                          GF(p). Default is the empty list for prime fields.
 
-    p should be a prime number, n some exponent greater than 1 (if used).
-    coefs are the coefficients of an irreducible polynomial in list format
-    (if used). 
+        Attributes:
+            p (int): The prime dimension of the field
+            n (int): The degree of the field extension 
+            dim (int): The full order of the field, :math:`p^n`.
+            w (pthRootOfUnity): The :math:`p^{\\text{th}}` root of unity.
 
-    EXAMPLE:
-    GF3 = GaloisField(3) # Produces the Galois field of order 3
-    GF8 = GaloisField(2, 3, [1, 0, 1, 1]) # GF of order 8, 
-                                          # with polynomial 1 + x^2 + x^3
-
-    GaloisField has a number of member variables:
-    p - The prime dimension of the field
-    n - The degree of the field extension (1 if just a prime field) 
-    w - The pth root of unity 
-    dim - The dimension of the space, p^n
-    coefs - The coefficients of the irreducible polynomial
-    elements - A list of all elements in the finite field, of class FieldElement
-    bool_sdb - A boolean which tells us whether the expansions are in the self-dual
-               basis (True) or the polynomial basis (False). The default is False.
+            coefs (list): The coefficients of the irreducible polynomial
+            elements (list): A list of all FieldElements in this finite field.
+            bool_sdb (bool): A boolean which tells us whether the elements'
+                             expansion coefficients are in the self-dual
+                             basis (True) or the polynomial basis (False). 
+                             The default is False.
     """
     def __init__(self, p, n = 1, coefs = []):
         # TODO implement check for prime number
@@ -136,25 +134,48 @@ class GaloisField():
         self.bool_sdb = False
 
 
-    def __getitem__(self, index):
-        """ Return element i (prime) or x^i (power of prime) of the field."""
-        if index < self.dim:
-            return self.elements[index]
+    def __getitem__(self, idx):
+        """ Access specific elements in the finite field.
+
+            Args:
+                idx (int): The index of the element to retrieve. For primes 
+                    this is the same as the number itself; for power-of-primes
+                    it represents the power of the primitive element.
+          
+            Returns:
+                The element at the specified index in the field. 
+
+              None if idx is out of bounds.
+        """
+        if idx < self.dim and idx >= 0:
+            return self.elements[idx]
         else:
             print("Error, element out of bounds.")
 
 
     def __iter__(self):
-        """ Make the finite field iterable; return an iterator to the field elements."""
+        """ Make the finite field iterable. 
+
+            Returns:
+                An iterator to the field elements.
+        """
         return iter(self.elements)
 
 
     def to_sdb(self, sdb_element_indices):
         """ Transform the expansions coefficients to the self-dual basis.
 
-        Valid only for power of prime fields. For now, assume that the 
-        user will provide the powers of the primitive element which can 
-        be used as a self-dual basis (later, we will implement this ourselves.
+            Currently valid only for fields whose orders are powers of 2.
+
+            Args:
+                sdb_element_indices (list): The indices of the FieldElements 
+                    (as powers of the primitive element) that represent the
+                    self-dual basis. e.g. if the self-dual basis is 
+                    :math:`\{ \sigma^3, \sigma^5, \sigma^6 \}`, this list
+                    would be [3, 5, 6].
+
+            TODO:
+                Implement automatic construction of some self-dual basis.
         """
 
         if self.n == 1:
@@ -164,7 +185,6 @@ class GaloisField():
         if self.verify_sdb(sdb_element_indices) == False:
             print("Invalid self-dual basis provided.")
             return
-
 
         # If all goes well, we can start computing the coefficients
         # in terms of the new elements by using the trace and multiplication
@@ -193,18 +213,27 @@ class GaloisField():
 
 
     def is_sdb(self):
-        """ Query the field to determine if we're in sdb or polynomial basis."""
+        """ Checks if a field is expressed in the self-dual basis.
+        
+            Returns:
+                True if the elements are expressed in the self-dual basis, 
+                false if otherwise.
+
+            TODO Remove this function and just rename bool_sdb to is_sdb.
+        """
         return self.bool_sdb
 
 
     def verify_sdb(self, sdb_element_indices):
-        """ Verify if a set of elements form a self-dual basis.
+        """ Verify if a set of elements form a proper self-dual normal basis.
 
-        Check two things here:
-        - The trace of each basis element with itself is 1.
-        - The trace of each basis element with every other is 0 (orthogonality). 
+            Check two things here:
+              * The trace of each basis element multiplied by itself is 1.
+              * The trace of each basis element multiplied by every other is 
+                0 (orthogonality). 
 
-        Return True if it's a self-dual basis, False if not.
+            Returns:
+                True if above conditions are satisfied, false if not. 
         """
         if len(sdb_element_indices) != self.n:
             print("Error, incorrect number of elements in proposed basis.")
@@ -225,7 +254,11 @@ class GaloisField():
 
 
     def compute_sdb(self):
-        """ Compute a self-dual basis for this field."""
+        """ Compute a self-dual basis for this field.
+       
+            .. warning::
+                DO NOT USE, still under development.
+        """
 
         # Compute a short list who's trace of their square is equal to 1
         first_round = []   
@@ -250,29 +283,49 @@ class GaloisField():
 
         return
 
+
     def to_poly(self):
         """ Transform the expansions coefficients to the polynomial basis.
             I'm lazy, so just return a fresh field.
+
+            .. warning::
+
+                I don't think this works.
         """
         self = GaloisField(self.p, self.n, self.coefs)
 
 
     def evaluate(self, coefs, argument):
-        """ Evaluate the effect of a curve on a finite field element.
-            The information about the curve is stored in the poly_coefs
-            argument. For example, if we wish to evaluate the curve
-            beta(alpha) = f[3] + 2 alpha + f[5] alpha^2 on the field
-            element f[1], then we would call this function as
+        """ Evaluate a function, or curve on a finite field element.
 
-            f.evaluate([f[3], 2, f[5]], f[1])
+            We consider here functions of the form
+            
+            .. math::
+              
+              f(\\alpha) = c_0 + c_1 \\alpha + \cdots + c_n \\alpha^n
+
+            This function is primarily meant for use with the Curve class in
+            my Balthasar package.
+
+            Args:
+                coefs (list): A set of coefficients for the curve, i.e.
+                              :math:`[c_0, c_1, \ldots, c_n]`. These should
+                              be a mix of integers and FieldElements.
+                argument (FieldElement): The argument to the function, i.e.
+                      the :math:`\\alpha` in :math:`f(\\alpha)`.
+              
+            Returns:
+                The value of the function of the argument, taken over the
+                finite field.
         """
         result = coefs[0] * self.elements[-1] 
         for coef_idx in range(1, len(coefs)):
             result += coefs[coef_idx] * pow(argument, coef_idx)
         return result
 
+
     def print(self):
-        """ Print out a wealth of useful information about the field."""
+        """ Print out all the useful information about a field."""
         
         print("--- Galois field information ---")
         print("p = " + str(self.p))
@@ -314,6 +367,7 @@ def tr(x):
 
 
 def gchar(x):
+    """ Wrapper so the user can do x.gchar() or gchar(x). """
     if type(x) is not FieldElement:
         print("Error, invalid argument to function 'gchar'.")
         return None

@@ -4,44 +4,40 @@ from pynitefields.pthrootofunity import pthRootOfUnity
 
 class FieldElement():
     """ Class for an element in a finite field.
-    
-    The class GaloisField stores an array of FieldElements().
-    All field arithmetic operations are are implemented within the 
-    FieldElement class.
-     
-    This is separate from the main field so that it has it's own type 
-    and we can do things like 
-    GF8[4] + GF8[2], 
-    rather than 
-    GF8.add(4, 2) 
-    and thus store the field elements in individual variables for 
-    later use. 
 
-    Details about member variables:
-    p - The prime dimension of the field this element is in
-    n - The degree of the field extension (1 if prime field)
-    dim - The full dimension of the field p^n
-    exp_coefs - A list of expansion coefficients in the basis of choice
-                (determined by the parent GaloisField class)
-    str_rep   - A representation of this elements basis coefficients as a string
-                (just the string version of exp_coefs)
-    field_list - A copy of the list of all elements in the parent GaloisField.
-                 Inclusion of this parameter is not ideal, but greatly
-                 simplifies the implementation of many of the arithmetic 
-                 operations (notably multiplication, inverse, exponentiation),
-                 and specifically for power of prime fields.
-                 With field_list, each element knows it's position, or power
-                 of the primitive element in the field, which makes operations
-                 which boil down to simple addition and multiplication of 
-                 exponents of the primitive element on paper much simpler.
+        Args:
+            p (int): The prime order of the field this element is in.
+            n (int): The degree of the field extension for the field this 
+                     element is in.
+            exp_coefs (list): The set of expansion coefficients of this element
+                              in terms of some basis.
+            field_list (list of FieldElements) - A copy of the list of all 
+                     elements in the GaloisField this element is in. Empty when
+                     the elements are initially constructed, and filled later
+                     by the constructor of GaloisField. Inclusion 
+                     of this parameter is not ideal, but greatly simplifies the 
+                     implementation of many of the arithmetic operations 
+                     (notably multiplication, inverse, exponentiation),
+                     specifically for power of prime fields. With field_list, 
+                     each element always knows its position, or power of the 
+                     primitive element in the field. I'm not proud of it being
+                     implemented this way, but this is the best I can do now.
+
+        Attributes:
+            p (int): The prime order of the field this element is in.
+            n (int): The degree of the field extension for the field this 
+                     element is in.
+            dim (int): The dimension of the field, :math:`p^n`.
+            prim_power (int): This element represented as a power of the 
+                              primitive element of the field.
+            exp_coefs (list): The set of expansion coefficients of this element
+                              in terms of some basis.
+            str_rep (string): A representation of the exp_coefs as a string.
+            field_list (list of FieldElements) - A copy of the list of all 
+                     elements in the GaloisField this element is in.
     """
 
     def __init__(self, p, n, exp_coefs, field_list = []):
-        """ Create an element of the finite field.
-
-        Initialize a field element given the field dimensions
-        and the expansion coefficients.
-        """
         self.p = p
         self.n = n
         self.dim = int(math.pow(p, n))
@@ -70,9 +66,13 @@ class FieldElement():
     def __add__(self, el):
         """ Addition.
 
-        Add two field elements together. Simple modulo for primes, 
-        need to deal with the coefficients modulo p for the 
-        extended case.
+            Args:
+                el (FieldElement): A FieldElement to add to this one.
+
+            Returns:
+                A FieldElement which is this element + el. For prime fields
+                this is simply addition modulo :math:`p`, for power-of-prime
+                fields we must add using the exp_coefs.
         """
         # Make sure we're in the same field!
         if (self.p != el.p) or (self.n != el.n):
@@ -89,16 +89,25 @@ class FieldElement():
 
 
     def __radd__(self, el):
-        """ Implementing this so we can use 'sum' over lists of field els. """
+        """ Add a field element to the left of this one. 
+        
+            Addition in finite fields is commutative so this works just like
+            the normal add. This is implemented so we can use 'sum' 
+            over lists of FieldElement.
+        """
         return self + el
     
 
     def __sub__(self, el):
-        """ Subtraction.
+        """ Addition.
 
-        Compute the difference of two elements. Simple modulo for primes, 
-        need to deal with the coefficients modulo p for the 
-        extended case.
+            Args:
+                el (FieldElement): A FieldElement to subtract from this one.
+
+            Returns:
+                A FieldElement which is this element - el. For prime fields
+                this is simply subtraction modulo :math:`p`, for power-of-prime
+                fields we must subtract using the exp_coefs.
         """
         # Make sure we're in the same field!
         if (self.p != el.p) or (self.n != el.n):
@@ -117,9 +126,17 @@ class FieldElement():
     def __mul__(self, el):
         """ Multiplication.
 
-        Compute the product of two elements. Simple modulo for primes, 
-        for power of primes we can use field_list to find out which power
-        of the primitive element each operand is, and then add those together.
+            Args: 
+                el (int or FieldElement): An element to multiply with this one.
+                      Can also pass an integer value.
+
+            Returns:
+                This element * el. For prime fields, this amounts to simple
+                multiplication modulo :math:`p`. For power of primes, this is
+                where the ugly field_list comes in handy. We can compute the
+                new power of the primitive element by adding together this one
+                and the one from el; we then use field_list to find the 
+                corresponding FieldElement and return it.
         """
         # Multiplication by a constant (must be on the right!)
         if isinstance(el, int):
@@ -156,15 +173,22 @@ class FieldElement():
             raise TypeError("Unsupported operator")
 
     def __rmul__(self, el): # Implementing rmul so we can multiply on the left by integers
+        """ Multiplication from the left. """
         return self * el
-        #if isinstance(el, int):
-        #    return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] , self    .field_list)
  
+
     def __truediv__(self, el):
         """ Division.
 
-        In a Galois Field division is just multiplying by the inverse. 
-        Always make sure we're not dividing by 0, since 0 has no multiplicative inverse.
+            In a Galois Field division is just multiplying by the inverse. By
+            definition of a finite field, every element has a multiplicative
+            inverse, except for 0.
+
+            Args:
+                An element to divide this one by.
+
+            Returns:
+                This element / el. Returns None if el = 0. 
         """
         if isinstance(el, FieldElement):
             if (self.p != el.p) or (self.n != el.n):
@@ -173,12 +197,12 @@ class FieldElement():
             # Prime
             if self.n == 1:
                 if self.prim_power == 0:
-                    print("Error! Cannot divide by 0, silly.")
+                    print("Cannot divide by 0.")
                     return
             # Power of prime
             else:
                 if self.field_list.index(self.str_rep) == 0:
-                    print("Error! Cannot divide by 0, silly.")
+                    print("Cannot divide by 0.")
                     return
             # Actually do the division 
             return self * el.inv()
@@ -208,9 +232,13 @@ class FieldElement():
     def __pow__(self, exponent):
         """ Exponentiation.
 
-        Compute the power self^exponent. Simple modulo for primes, 
-        need to wrap around the exponents for power of primes. For power of primes,
-        we conventionally consider the primitive element to the 0'th power to be 0.
+            Args:
+                exponent (int): Something to exponentiate this element by.
+
+            Returns:
+                This element to the power of exponent. Just the normal power
+                modulo p for primes. For power-of-primes, we define that the
+                power of any element to 0 is the 0 element, and *not* 1.
         """
         # Prime case
         if self.n == 1:
@@ -229,7 +257,16 @@ class FieldElement():
             
 
     def __eq__(self, el):
-        # Test equality of two field elements
+        """ Test equality of two field elements.
+            
+            Args:
+                el (FieldElement): An element to compare with.
+
+            Returns:
+                True if the field dimensions (:math:`p`, :math:`n`) are the 
+                same, the basis expansions are the same, and the list of 
+                field elements is the same. False otherwise.
+        """
         if (self.p != el.p) or (self.n != el.n):
             return False
         if self.exp_coefs != el.exp_coefs:
@@ -241,10 +278,18 @@ class FieldElement():
 
     def __lt__(self, el):
         """ Implement a 'natural' ordering for field elements.
+
             For prime fields, this is simply the ordering of natural numbers.
             For power of primes, turn the coefficient lists into binary
-              strings, and order them this way. Doing this to allow for
-              Wigner functions to be plotted 'in order' in Balthasar.
+            strings, and order them this way. Doing this to allow for
+            Wigner functions to be plotted 'in order' in Balthasar.
+
+            Args:
+                el (FieldElement): An element to compare with.
+
+            Returns:
+                True if this element is 'less' by the conditions defined above.
+                False otherwise.
         """
         if self.n == 1: 
             if self.prim_power < el.prim_power:
@@ -267,16 +312,22 @@ class FieldElement():
         else:
             return str(self.exp_coefs)
 
+
     def __hash__(self):
         """ Make hashable so we can use these guys as dictionary keys."""
         return hash(repr(self))
 
 
     def inv(self):
-        """ Inversion.
+        """ Compute the multiplicative inverse of a field element.
 
-        Compute the multiplicative inverse of a field element.
-        All elements have a multiplicative inverse except 0.
+            Returns:
+                The FieldElement that is the inverse of this one. All
+                elements have a multiplicative inverse except for 0;
+                if 0 is passed, prints error message and returns None.
+
+            Note: The trace of an element can be invoked in two ways. One can
+            do el.inv() or inv(el).
         """
         if self.n == 1: # Prime case - brute force :(
             if self.prim_power == 0:
@@ -300,11 +351,22 @@ class FieldElement():
 
 
     def tr(self):
-        """ Trace.
-        Compute the trace of a field element. Relies on the pow function so
-        it has the same implementation for prime and powers of prime. 
-        The trace of any element should be an element of the base field 
-        for the power of prime case.
+        """ Compute the trace of a field element. 
+
+            The trace of an element is defined as 
+
+            .. math ::
+
+              \\text{tr}(\\alpha) = \\alpha + \\alpha^p + \\alpha^{p^2} + \cdots \\alpha^{p^n - 1}
+        
+            The trace of any element should be an element of the base field 
+            GF(:math:`p`) for the power of prime case.
+
+            Returns:
+                The trace of this element, as expressed above, as an integer.
+
+            Note: The trace of an element can be invoked in two ways. One can
+            do el.tr() or tr(el).
         """
         sum = self
 
@@ -317,15 +379,29 @@ class FieldElement():
 
 
     def gchar(self):
-        """ The group character of an element is defined as the pth root of
-            unity to the power of the trace of the field element.
+        """ Compute the character of a FieldElement. 
+
+            We define our group character as 
+
+            .. math::
+
+                \chi({\\alpha}) = \omega_{p}^{\\text{tr}({\\alpha})} 
+
+            where :math:`\omega_p` is the :math:`p^\\text{th}` root of unity.
+
+            Returns:
+                :math:`\chi(\\alpha)` as defined above. For fields with 
+                characteristic 2, this is an integer. For fields extended from
+                odd primes, it is a pthRootOfUnity.
+
+            Note: The trace of an element can be invoked in two ways. One can
+            do el.gchar() or gchar(el).
         """
         if self.p == 2:
             return ((-1) **  self.tr())
         else:
             return pthRootOfUnity(self.p, self.tr())
             
-
 
     def print(self):
         """ Print out information about the element."""

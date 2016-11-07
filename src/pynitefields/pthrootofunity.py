@@ -2,23 +2,33 @@ import numpy as np
 import math
 
 class pthRootOfUnity():
-    """ Class to hold p^th roots of unity symbolically over finite fields.
+    """ Class to hold :math:`p^{\\text{th}}` roots of unity symbolically over finite fields. 
+        
         These guys have the form
-                                exp(2 pi i / p)
-        where p is the characteristic of the field.
 
+        .. math::
+
+            \omega_p = \exp \left( \\frac{2 \\pi i}{p} \\right)
+
+        where :math:`p` is the characteristic of the field.
         They can be evaluated both symbolically and also exactly by 
-        explicitly computing the value listed above using numpy. 
+        explicitly computing the value above using numpy. 
         Here we'll implement only what we need: exponents and multiplication.
+
+        Args:
+            p (int): The characteristic of some finite field.
+            e (int): An exponent, if desired (default is 1).
+
+        An object of type pthRootOfUnity has the following attributes.
+
+        Attributes:
+            p (int): Which root of unity we are dealing with.
+            e (int): An additional exponent representing a power, i.e. 
+                     :math:`\omega_p ^ e`.
+
     """
 
     def __init__(self, p, e = 1):
-        """ Initialize a pth root of unity.
-            Member variables:
-            p - The characteristic of the underlying field. Should be prime.
-                 Element takes the form of exp(2 pi i / p)
-            e - The exponent, e.g. w^e. Default is 1.
-        """
         # TODO some sort of primality check
         if p < 2:
             print ("Error, please enter a prime to make roots of unity.")
@@ -28,10 +38,15 @@ class pthRootOfUnity():
 
 
     def __mul__(self, op):
-        """ Multiplication. These guys are cyclic: 
-                      w^0 = 1, w^1 = w, w^2 = ..., w^p = 1,
-            and so on. So we just need to add the exponents and get the
-            result mod p.
+        """ Multiply two roots of unity. Roots of unity are cyclic, i.e.
+            :math:`\omega_p ^ p = 1`.
+
+            Args:
+                op (pthRootOfUnity): What to multiply by, say, 
+                                     :math:`\omega_p^{e^\prime}`.
+
+            Returns: 
+                :math:`\omega_p^{e} \cdot \omega_p^{e^\prime}`.
         """
         if self.p != op.p:
             print("Error, cannot multiply roots of unity from different primes.")
@@ -47,7 +62,15 @@ class pthRootOfUnity():
 
 
     def __truediv__(self, op):
-        """ Division. Same idea as multiplication. """
+        """ Division. 
+
+            Args:
+                op (pthRootOfUnity): What to divide by, say, 
+                                     :math:`\omega_p^{e^\prime}`.
+
+            Returns: 
+                :math:`\omega_p^{e} /  \omega_p^{e^\prime}`.
+        """
         if self.p != op.p:
             print("Error, cannot divide roots of unity from different primes.")
             return 
@@ -61,15 +84,37 @@ class pthRootOfUnity():
         return self / op
 
 
-    def __pow__(self, exponent):
-        """ Exponentiation. Just multiply by exponent and take it
-            modulo the prime. """
+    def __pow__(self, ex):
+        """ Exponentiation. 
+        
+            Args:
+                ex (int): Some integer exponent.
+
+            Returns:
+                :math:`\omega_p^{e \cdot ex}`, where :math:`ex` is
+                the exponent passed in as an argument.
+        """
         new_exp = (self.e * exponent) % self.p
         return pthRootOfUnity(self.p, new_exp)  
 
             
     def __eq__(self, op):
-        """ Test equality of two field elements """
+        """ Equality of two roots of unity.
+
+            We consider two roots of unity equal if both their characteristics
+            :math:`p` and exponents :math:`e` are equal.
+        
+            Args:
+                op (pthRootOfUnity): A pth root to check equality with.
+
+            Returns:
+                True if the primes and exponents are the same; false otherwise.
+                None if there is a type error.
+        """
+        if type(op) != pthRootOfUnity:
+            print("Error, type cannot be compared with pthRootOfUnity.")
+            return None
+
         if self.p != op.p:
             return False
         if self.e != op.e:
@@ -78,14 +123,23 @@ class pthRootOfUnity():
 
 
     def __repr__(self):
-        """ Make the field element get printed in the command line."""
+        """ Print pth roots of unity in the command line.
+
+            We represent the :math:`\omega` using a simple 'w'.
+        """ 
         return ("w^" + str(self.e))
 
 
     def eval(self):
-        """ Compute the actual number. Gross. """
+        """ Use numpty to evaluate the actual number. Gross. 
+        
+            Returns: 
+                The numerical value :math:`\exp \\left(\\frac{2 \\pi i \cdot e}{p} \\right)`.
+        """
         return pow(np.exp(2 * np.pi * 1j / self.p), self.e)
 
 
     def print(self):
+        """ Prints the pth root of unity. 
+        """
         print("w^" + str(self.e))
