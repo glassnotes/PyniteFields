@@ -357,7 +357,7 @@ class FieldElement():
 
             .. math ::
 
-              \\text{tr}(\\alpha) = \\alpha + \\alpha^p + \\alpha^{p^2} + \cdots \\alpha^{p^n - 1}
+              \\text{tr}(\\alpha) = \\alpha + \\alpha^p + \\alpha^{p^2} + \cdots \\alpha^{p^{n - 1}}
         
             The trace of any element should be an element of the base field 
             GF(:math:`p`) for the power of prime case.
