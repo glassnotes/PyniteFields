@@ -102,10 +102,10 @@ In general, for a curve
 _b_(_a_) = _c_<sub>0</sub> + _c_<sub>1</sub> _a_ + ... + _c_<sub>_k_</sub> _a_<sup>k</sup>,
 we should feed evaluate a curve which has list form  
 ```
-curve = [_c_<sub>0</sub>, _c_<sub>1</sub>, ..., _c_<sub>_k_</sub>].
+curve = [c_0, c_1, ..., c_k].
 ```
 For coefficients which are essentially integers, you can simply put the integer rather
-than specifying it as a field element (e.g. [f[1], f[2], 2]).
+than specifying it as a field element (e.g. ```[f[1], f[2], 2]```).
 
 =============================================================================
 
