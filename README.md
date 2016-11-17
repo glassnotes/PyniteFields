@@ -9,6 +9,14 @@ You can install PyniteFields as follows:
 python3 setup.py install
 ```
 
+More comprehensive documentation for PyniteFields can be generated via Sphinx
+by running
+```
+make html
+```
+(or whatever your preferred documentation format) from the doc directory.
+
+## A brief tutorial
 All operations are done with a single object of the class GaloisField. 
 
 You can create a field with prime order like so (using order 5):
