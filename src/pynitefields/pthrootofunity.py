@@ -1,5 +1,17 @@
-import numpy as np
+#!/usr/bin/python                                                                  
+# -*- coding: utf-8 -*-                                                            
+#                                                                                  
+# pthrootofunity.py: Implementation of pth roots of unity. 
+#                                                                                  
+# © 2016 Olivia Di Matteo (odimatte@uwaterloo.ca)                                  
+#                                                                                  
+# This file is part of the project PyniteFields.                                      
+# Licensed under BSD-3-Clause                                                      
+# 
+
 import math
+
+import numpy as np
 
 class pthRootOfUnity():
     """ Class to hold :math:`p^{\\text{th}}` roots of unity symbolically over finite fields. 

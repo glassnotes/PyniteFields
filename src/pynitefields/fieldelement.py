@@ -1,3 +1,14 @@
+#!/usr/bin/python                                                                  
+# -*- coding: utf-8 -*-                                                            
+#                                                                                  
+# fieldelement.py: A class for elements in a finite field. 
+#                                                                                  
+# © 2016 Olivia Di Matteo (odimatte@uwaterloo.ca)                                  
+#                                                                                  
+# This file is part of the project PyniteFields.                                      
+# Licensed under BSD-3-Clause                                                      
+# 
+
 import math
 
 from pynitefields.pthrootofunity import pthRootOfUnity
