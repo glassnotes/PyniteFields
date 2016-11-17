@@ -6,7 +6,6 @@ FiniteFields package, which is pretty great (except then you have to write every
 
 You can install PyniteFields as follows:
 ```
-cd PyniteFields
 python3 setup.py install
 ```
 
