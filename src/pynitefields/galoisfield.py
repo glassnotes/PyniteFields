@@ -156,7 +156,7 @@ class GaloisField():
 
               None if idx is out of bounds.
         """
-        if idx < self.dim and idx >= -1:
+        if idx < self.dim and idx >= (-1 * self.dim):
             return self.elements[idx]
         else:
             print("Error, element out of bounds.")
