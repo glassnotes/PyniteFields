@@ -136,6 +136,7 @@ class GaloisField():
             # This is really dumb, but make sure each element holds a copy of the whole
             # list of the field elements. This makes field multiplication way easier.
             for i in range(len(self.elements)):
+                (self.elements[i]).poly = coefs
                 (self.elements[i]).field_list = field_list 
                 (self.elements[i]).prim_power = i
 
@@ -221,6 +222,8 @@ class GaloisField():
         for i in range(len(self.elements)):
             (self.elements[i]).field_list = field_list 
             (self.elements[i]).prim_power = i
+            (self.elements[i]).poly = self.coefs
+            (self.elements[i]).is_polyb = False
 
         self.is_sdb = True
 
@@ -292,21 +295,25 @@ class GaloisField():
                         if trace_result != 0:
                             return False
 
-            # If the sdb so far has been okay, let's reshuffle it so the element
-            # with coefficient > 1 is at the beginning. I'm honestly not sure why we 
-            # do this, but this is what Andrei said to do in our LS paper.
+            # For power of primes, the self-dual basis **might** be real (e.g. dim 27).
+            # It's possible that all normalizations are 1, so check this, and carry on if true.
+            if normalizations.count(1) == len(normalizations):
+                self.sdb_coefs = normalizations
+            else:
+                # If the sdb so far has been okay, let's reshuffle it so the element
+                # with coefficient > 1 is at the beginning. I'm honestly not sure why we 
+                # do this, but this is what Andrei said to do in our LS paper.
+                # Get the index of the non-1 element. Thanks to 
+                # http://stackoverflow.com/questions/4111412/how-do-i-get-a-list-of-indices-of-non-zero-elements-in-a-list
+                non1 = [i for i, e in enumerate(normalizations) if e != 1][0] 
+                shuffled_sdb = [sdb_element_indices[non1]] + sdb_element_indices[:non1] + \
+                                    sdb_element_indices[non1 + 1:]
 
-            # Get the index of the non-1 element. Thanks to 
-            # http://stackoverflow.com/questions/4111412/how-do-i-get-a-list-of-indices-of-non-zero-elements-in-a-list
-            non1 = [i for i, e in enumerate(normalizations) if e != 1][0] 
-            shuffled_sdb = [sdb_element_indices[non1]] + sdb_element_indices[:non1] + \
-                                sdb_element_indices[non1 + 1:]
+                # Set coefs for the whole class
+                self.sdb_coefs = [normalizations[non1]] + normalizations[:non1] + normalizations[non1 + 1:]
 
-            # Set coefs for the whole class
-            self.sdb_coefs = [normalizations[non1]] + normalizations[:non1] + normalizations[non1 + 1:]
-
-            sdb_element_indices = shuffled_sdb
-                            
+                sdb_element_indices = shuffled_sdb
+                              
         # If we made it this far, we're golden.
         return True, sdb_element_indices
 
@@ -413,11 +420,12 @@ class GaloisField():
             # include the coefficient c_1. So print a message to show this.
             if self.p != 2:
                 if self.is_sdb:
-                    print()
-                    print("The coefficients below must take into account the ", end="")
-                    print("normalization of the almost self-dual basis.")
-                    print("To get the proper expression, the first coefficient must always be ", end="")
-                    print("multiplied by the inverse of: " + str(self.sdb_coefs[0]))
+                    if self.sdb_coefs.count(1) != len(self.sdb_coefs):
+                        print()
+                        print("The coefficients below must take into account the ", end="")
+                        print("normalization of the almost self-dual basis.")
+                        print("To get the proper expression, the first coefficient must always be ", end="")
+                        print("multiplied by the inverse of: " + str(self.sdb_coefs[0]))
 
         print("\nField elements:")
         for element in self.elements:

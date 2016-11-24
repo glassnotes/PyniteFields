@@ -43,12 +43,14 @@ class FieldElement():
                               primitive element of the field.
             exp_coefs (list): The set of expansion coefficients of this element
                               in terms of some basis.
+            is_polyb (bool): Indicates whether this element is expressed in
+                             the polynomial basis or not.
             str_rep (string): A representation of the exp_coefs as a string.
             field_list (list of FieldElements) - A copy of the list of all 
                      elements in the GaloisField this element is in.
     """
 
-    def __init__(self, p, n, exp_coefs, field_list = []):
+    def __init__(self, p, n, exp_coefs, field_list = [], is_polyb = True):
         self.p = p
         self.n = n
         self.dim = int(math.pow(p, n))
@@ -57,6 +59,7 @@ class FieldElement():
         # If we're in a prime field, the basis is 1, and
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
+        self.is_polyb = is_polyb
         self.str_rep = "".join([str(x) for x in exp_coefs])
         self.prim_power = -1
         self.field_list = []
@@ -70,6 +73,7 @@ class FieldElement():
         # ALL the field elements have been created. This is set only
         # for power of prime fields.
         if len(field_list) != 0:
+            self.poly = []
             self.field_list = field_list 
             self.prim_power = self.field_list.index(self.str_rep)
 
@@ -379,14 +383,22 @@ class FieldElement():
             Note: The trace of an element can be invoked in two ways. One can
             do el.tr() or tr(el).
         """
-        sum = self
+        s = self
 
         if self.n == 1:
             return self.prim_power
         else:
             for i in range(1, self.n):
-                sum = sum + pow(self, pow(self.p, i))
-        return sum.exp_coefs[0]
+                s = s + pow(self, pow(self.p, i))
+
+        # If we are using the self-dual basis, we need to get the "real"
+        # value of the trace from the poly basis field.
+        if not self.is_polyb:
+            from pynitefields.galoisfield import GaloisField
+            poly_f = GaloisField(self.p, self.n, self.poly)
+            s = poly_f[s.prim_power]
+
+        return s.exp_coefs[0]
 
 
     def gchar(self):

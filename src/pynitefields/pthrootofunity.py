@@ -106,7 +106,7 @@ class pthRootOfUnity():
                 :math:`\omega_p^{e \cdot ex}`, where :math:`ex` is
                 the exponent passed in as an argument.
         """
-        new_exp = (self.e * exponent) % self.p
+        new_exp = (self.e * ex) % self.p
         return pthRootOfUnity(self.p, new_exp)  
 
             
