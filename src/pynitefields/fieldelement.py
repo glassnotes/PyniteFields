@@ -393,7 +393,7 @@ class FieldElement():
 
         # If we are using the self-dual basis, we need to get the "real"
         # value of the trace from the poly basis field.
-        if not self.is_polyb:
+        if self.is_polyb is False:
             from pynitefields.galoisfield import GaloisField
             poly_f = GaloisField(self.p, self.n, self.poly)
             s = poly_f[s.prim_power]
