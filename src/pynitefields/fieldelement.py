@@ -42,13 +42,17 @@ class FieldElement():
             prim_power (int): This element represented as a power of the 
                               primitive element of the field.
             exp_coefs (list): The set of expansion coefficients of this element
-                              in terms of some basis.
+                              in terms of the polynomial basis.
+            is_sdb (bool): Indicates whether this element is expressed in
+                           the self-dual basis or not. False by default.
+            sdb_coefs (list): The set of expansion coefficients in the self-
+                              dual basis. Empty by default.
             str_rep (string): A representation of the exp_coefs as a string.
             field_list (list of FieldElements) - A copy of the list of all 
                      elements in the GaloisField this element is in.
     """
 
-    def __init__(self, p, n, exp_coefs, field_list = []):
+    def __init__(self, p, n, exp_coefs, field_list = [], is_sdb = False, sdb_field_list = [], sdb_coefs = []):
         self.p = p
         self.n = n
         self.dim = int(math.pow(p, n))
@@ -58,21 +62,33 @@ class FieldElement():
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
         self.str_rep = "".join([str(x) for x in exp_coefs])
-        self.prim_power = -1
-        self.field_list = []
+
+        # These parameters initially gets set by the GaloisField constructor 
+        # after ALL the field elements have been created. This is set only
+        # for power of prime fields. However, when we perform operations on
+        # elements such as addition, multiplication, we will need to 
+        self.field_list = field_list
+
+        if len(field_list) != 0:
+            self.prim_power = self.field_list.index(self.str_rep)
+        else:
+            self.prim_power = -1
 
         # Prim power doesn't really make sense for prime, but set it here
         # so that we can make the rest of the code more general
         if self.n == 1:
             self.prim_power = exp_coefs[0]
 
-        # This gets set by the GaloisField constructor after
-        # ALL the field elements have been created. This is set only
-        # for power of prime fields.
-        if len(field_list) != 0:
-            self.field_list = field_list 
-            self.prim_power = self.field_list.index(self.str_rep)
+        # These parameters will be something other than their default value
+        # only if the to_sdb function is called on the GaloisField.
+        self.is_sdb = is_sdb
+        self.sdb_field_list = sdb_field_list
+        self.sdb_coefs = sdb_coefs 
 
+        # Reset the sdb coefficients after an operation if need be.
+        if self.is_sdb:
+            self.sdb_coefs = [int(x) for x in self.sdb_field_list[self.prim_power]] 
+      
 
     def __add__(self, el):
         """ Addition.
@@ -96,7 +112,7 @@ class FieldElement():
         else: # Power of prime case
             # Coefficients simply add modulo p
             new_coefs = [(self.exp_coefs[i] + el.exp_coefs[i]) % self.p for i in range(0, self.n)]
-            return FieldElement(self.p, self.n, new_coefs, self.field_list)
+            return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
 
 
     def __radd__(self, el):
@@ -131,7 +147,7 @@ class FieldElement():
         else:  # Power of prime case
             # Coefficients subtract modulo p
             new_coefs = [(self.exp_coefs[i] - el.exp_coefs[i]) % self.p for i in range(0, self.n)]
-            return FieldElement(self.p, self.n, new_coefs, self.field_list)
+            return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
 
 
     def __mul__(self, el):
@@ -151,7 +167,7 @@ class FieldElement():
         """
         # Multiplication by a constant (must be on the right!)
         if isinstance(el, int):
-            return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] , self.field_list)
+            return FieldElement(self.p, self.n, [(el * exp_coef) % self.p for exp_coef in self.exp_coefs] , self.field_list, self.is_sdb, self.sdb_field_list)
 
         # Multiplication by another FieldElement
         elif isinstance(el, FieldElement):
@@ -168,9 +184,10 @@ class FieldElement():
                 # I stored the whole list of field elements in each element for a reason...
                 # Now we can multiply really easily
 
-                if el.prim_power == 0 or self.prim_power == 0: # Multiplying by 0, nothing to see here
-                    new_exp_coefs = [int(x) for x in self.field_list[0]] 
-                    return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
+                # Multiplying by 0, nothing to see here
+                if el.prim_power == 0 or self.prim_power == 0: 
+                    zeros = [0] * self.n
+                    return FieldElement(self.p, self.n, zeros, self.field_list, self.is_sdb, self.sdb_field_list)
                 else:
                     new_exp = self.prim_power + el.prim_power # New exponent
                     # If the exponent calculated is outside the range of primitive element
@@ -179,9 +196,10 @@ class FieldElement():
                     if new_exp > self.dim - 1: 
                         new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
                     new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
-                    return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
+                    return FieldElement(self.p, self.n, new_exp_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
         else:
             raise TypeError("Unsupported operator")
+
 
     def __rmul__(self, el): # Implementing rmul so we can multiply on the left by integers
         """ Multiplication from the left. """
@@ -256,15 +274,16 @@ class FieldElement():
             return FieldElement(self.p, self.n, [int(math.pow(self.prim_power, exponent)) % self.p])
         # Power of prime case
         else:
-            new_exp_coefs = []
-            if self.prim_power == 0 or exponent == 0: # 0, and any element to the 0 is 0 by convention 
-                new_exp_coefs = [int(x) for x in self.field_list[0]]
+            new_coefs = []
+            # 0, and any element to the 0 is 0 by convention 
+            if self.prim_power == 0 or exponent == 0: 
+                new_coefs = [int(x) for x in self.field_list[0]]
             else:
                 new_exp = self.prim_power * exponent
                 if new_exp > self.dim - 1:
                     new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-                new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
-            return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
+                new_coefs = [int(x) for x in self.field_list[new_exp]] 
+            return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
             
 
     def __eq__(self, el):
@@ -308,12 +327,21 @@ class FieldElement():
             else:
                 return False
         else:
-            this_exp_str = [str(x) for x in self.exp_coefs]
-            that_exp_str = [str(x) for x in el.exp_coefs]
-            if "".join(this_exp_str) < "".join(that_exp_str):
-                return True
+            # If there is a sdb defined, use that, otherwise use exp_coefs
+            if self.is_sdb:
+                this_exp_str = [str(x) for x in self.sdb_coefs]
+                that_exp_str = [str(x) for x in el.sdb_coefs]
+                if "".join(this_exp_str) < "".join(that_exp_str):
+                    return True
+                else:
+                    return False
             else:
-                return False
+                this_exp_str = [str(x) for x in self.exp_coefs]
+                that_exp_str = [str(x) for x in el.exp_coefs]
+                if "".join(this_exp_str) < "".join(that_exp_str):
+                    return True
+                else:
+                    return False
 
 
     def __repr__(self):
@@ -321,7 +349,10 @@ class FieldElement():
         if self.n == 1:
             return str(self.prim_power)
         else:
-            return str(self.exp_coefs)
+            if self.is_sdb:
+                return str(self.sdb_coefs)
+            else:
+                return str(self.exp_coefs)
 
 
     def __hash__(self):
@@ -357,8 +388,8 @@ class FieldElement():
                 return self 
             # All other elements, find exponent which sums to dim - 1
             else:
-                new_exp_coefs = [int(x) for x in self.field_list[self.dim - self.prim_power - 1]]
-                return FieldElement(self.p, self.n, new_exp_coefs, self.field_list)
+                new_coefs = [int(x) for x in self.field_list[self.dim - self.prim_power - 1]]
+                return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
 
 
     def tr(self):
@@ -379,14 +410,15 @@ class FieldElement():
             Note: The trace of an element can be invoked in two ways. One can
             do el.tr() or tr(el).
         """
-        sum = self
+        s = self
 
         if self.n == 1:
             return self.prim_power
         else:
             for i in range(1, self.n):
-                sum = sum + pow(self, pow(self.p, i))
-        return sum.exp_coefs[0]
+                s = s + pow(self, pow(self.p, i))
+
+        return s.exp_coefs[0]
 
 
     def gchar(self):
@@ -419,4 +451,7 @@ class FieldElement():
         if self.n == 1:
             print(self.prim_power)
         else:
-            print(self.exp_coefs)
+            if self.is_sdb:
+                print(self.sdb_coefs)
+            else:
+                print(self.exp_coefs)

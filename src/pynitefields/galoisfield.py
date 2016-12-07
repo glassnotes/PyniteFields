@@ -34,10 +34,10 @@ class GaloisField():
 
             coefs (list): The coefficients of the irreducible polynomial
             elements (list): A list of all FieldElements in this finite field.
-            bool_sdb (bool): A boolean which tells us whether the elements'
-                             expansion coefficients are in the self-dual
-                             basis (True) or the polynomial basis (False). 
-                             The default is False.
+            is_sdb (bool): A boolean which tells us whether the elements'
+                           expansion coefficients are in the self-dual
+                           basis (True) or the polynomial basis (False). 
+                           The default is False.
     """
     def __init__(self, p, n = 1, coefs = []):
         # TODO implement check for prime number
@@ -118,7 +118,7 @@ class GaloisField():
                 next_coefs = [0] + self.elements[el - 1].exp_coefs
                 
                 # Get a list of the powers whose coefficients aren't 0
-                which_to_sum = [self.elements[i] * coeff for i, coeff in enumerate(next_coefs) if coeff != 0]
+                which_to_sum = [self.elements[i] * co for i, co in enumerate(next_coefs) if co != 0]
                 sum = self.elements[0]
 
                 for sum_el in which_to_sum:
@@ -139,8 +139,11 @@ class GaloisField():
                 (self.elements[i]).field_list = field_list 
                 (self.elements[i]).prim_power = i
 
-        # By default, we are using the polynomial basis
-        self.bool_sdb = False
+        # SDB information
+        self.is_sdb = False # Have we indicated an sdb?
+        self.sdb = [] # The indices of the elements that make up the sdb
+        self.sdb_norms = [] # The trace of the sdb squared - usually 1, but
+                            # if the sdb is almost sd, then one is not 1.
 
 
     def __getitem__(self, idx):
@@ -191,75 +194,138 @@ class GaloisField():
             print("Cannot take self-dual basis of a prime field.")
             return
 
-        if self.verify_sdb(sdb_element_indices) == False:
+        # Make sure that the provided sdb is valid. In qudit cases, we may
+        # also be shuffling the elements, so make sure to get the shuffled copy.
+        valid_sdb, valid_element_indices, valid_sdb_norms = self.verify_sdb(sdb_element_indices)
+
+        if not valid_sdb:
             print("Invalid self-dual basis provided.")
             return
+
+        if valid_element_indices != sdb_element_indices:
+            print("The order of your self-dual basis elements has changed.")
+            print("This is due to the presence of a non-1 normalization coefficient.")
+            print("New ordering is " + str(valid_element_indices) + ".")
+
+        # Set the sdb 
+        self.is_sdb = True
+        self.sdb = valid_element_indices
+        self.sdb_norms = valid_sdb_norms
+
 
         # If all goes well, we can start computing the coefficients
         # in terms of the new elements by using the trace and multiplication
         # functions.
-        new_elements = []
-        field_list = []
-
-        sdb = [self.elements[sdb_element_indices[i]] for i in range(0, self.n)]
-
+        sdb_els = [self.elements[self.sdb[i]] for i in range(0, self.n)]
+        sdb_field_list = []
         for element in self.elements:
             sdb_coefs = [] # Expansion coefficients in the sdb
 
-            for basis_el in sdb:
+            for basis_el in sdb_els:
                 sdb_coefs.append(tr(element * basis_el))
 
-            new_elements.append(FieldElement(self.p, self.n, sdb_coefs))
-            field_list.append("".join([str(x) for x in sdb_coefs]))
+            sdb_field_list.append("".join([str(x) for x in sdb_coefs]))
 
-        self.elements = new_elements
-        for i in range(len(self.elements)):
-            (self.elements[i]).field_list = field_list 
-            (self.elements[i]).prim_power = i
+            element.is_sdb = True
+            element.sdb_coefs = sdb_coefs
+
+        # Finally, give every element a copy of the sdb coefficients
+        for element in self.elements:
+            element.sdb_field_list = sdb_field_list
     
-
-        self.bool_sdb = True
-
-
-    def is_sdb(self):
-        """ Checks if a field is expressed in the self-dual basis.
-        
-            Returns:
-                True if the elements are expressed in the self-dual basis, 
-                false if otherwise.
-
-            TODO Remove this function and just rename bool_sdb to is_sdb.
-        """
-        return self.bool_sdb
 
 
     def verify_sdb(self, sdb_element_indices):
         """ Verify if a set of elements form a proper self-dual normal basis.
 
-            Check two things here:
-              * The trace of each basis element multiplied by itself is 1.
+            For qubit systems, a proper self-dual basis always exists. There are
+            two properties to check for this:
+              * The trace of each basis element squared is 1.
               * The trace of each basis element multiplied by every other is 
                 0 (orthogonality). 
 
+            In qudit cases, the first condition needs to be modified; there
+            will always be some basis element where the trace of the square is *not*
+            1, but rather some other element in the prime field. To this end, we will
+            keep a list of the 'normalization' coefficients for the almost sdb. We will
+            also reorder the almost sdb in this case so that the non-1 element is first.
+ 
             Returns:
-                True if above conditions are satisfied, false if not. 
+                A triple containing the following values:
+                - True if above conditions are satisfied, false if not. 
+                - The sdb element indices, the ordering of which may change if 
+                  the basis is not perfectly self-dual. None if cond 1 is false.
+                - The normalizations of the sdb elements. A list of 1s if the
+                  basis is perfectly self-dual, or a positive coefficient plus
+                  the rest of the list 1s if almost self-dual. None if cond 1
+                  is not satisfied.
         """
+
         if len(sdb_element_indices) != self.n:
             print("Error, incorrect number of elements in proposed basis.")
-            return False
+            return False, None, None
 
-        for i in range(0, self.n):
-            for j in range(i, self.n): # Don't double compute things
-                trace_result = tr(self.elements[sdb_element_indices[i]] * self.elements[sdb_element_indices[j]])
+        sdb_norms = []
 
-                if i == j: # Same element, should have trace 1
-                    if trace_result != 1:
-                        return False
-                else: # Different elements should be orthogonal and have trace 0
-                    if trace_result != 0:
-                        return False
+        if self.p == 2: # Qubit case
+            for i in range(0, self.n):
+                for j in range(i, self.n): # Don't double compute things
+                    trace_result = tr(self.elements[sdb_element_indices[i]] * self.elements[sdb_element_indices[j]])
 
-        return True
+                    if i == j: # Same element, should have trace 1
+                        if trace_result != 1:
+                            return False, None, None
+                    else: # Different elements should be orthogonal and have trace 0
+                        if trace_result != 0:
+                            return False, None, None
+
+            # If successful, set the orthogonality coefficients to 1
+            sdb_norms = [1] * self.n
+
+        else: # Qudit case
+            for i in range(0, self.n):
+                for j in range(0, self.n):
+                    trace_result = tr(self.elements[sdb_element_indices[i]] * self.elements[sdb_element_indices[j]])
+                    
+                    if i == j: # Square the element and trace it
+                        # Just needs to be in the prime_field
+                        if trace_result < 0 or trace_result >= self.p:
+                            return False, None, None
+                           
+                        # Only one element can have a non-1 normalization 
+                        if trace_result == 1: 
+                            sdb_norms.append(trace_result)
+                        else:
+                            non1 = [x for x in sdb_norms if x != 1]
+                            if len(non1) >= 1:
+                                print("Error, more than one element has a non-one normalization coefficient.")
+                                print("Self-dual basis is invalid.")
+                                return False, None, None
+                            else:
+                                sdb_norms.append(trace_result)
+                    else: # Different elements must be trace-orthogonal
+                        if trace_result != 0:
+                            return False, None, None
+
+            # For power of primes, the self-dual basis **might** be real (e.g. dim 27).
+            # It's possible that all normalizations are 1, so check this, and carry on if true.
+            if sdb_norms.count(1) != len(sdb_norms):
+                # If the sdb so far has been okay, let's reshuffle it so the element
+                # with coefficient > 1 is at the beginning. I'm honestly not sure why we 
+                # do this, but this is what Andrei said to do in our LS paper.
+                # Get the index of the non-1 element. Thanks to 
+                # http://stackoverflow.com/questions/4111412/how-do-i-get-a-list-of-indices-of-non-zero-elements-in-a-list
+                non1 = [i for i, e in enumerate(sdb_norms) if e != 1][0] 
+
+                shuffled_sdb = [sdb_element_indices[non1]] + sdb_element_indices[:non1] + \
+                                    sdb_element_indices[non1 + 1:]
+                shuffled_norms = [sdb_norms[non1]] + sdb_norms[:non1] + sdb_norms[non1 + 1:]
+
+                sdb_element_indices = shuffled_sdb
+                sdb_norms = shuffled_norms
+                              
+        # If we made it this far, we're golden.
+        return True, sdb_element_indices, sdb_norms
 
 
     def compute_sdb(self):
@@ -294,14 +360,12 @@ class GaloisField():
 
 
     def to_poly(self):
-        """ Transform the expansions coefficients to the polynomial basis.
-            I'm lazy, so just return a fresh field.
-
-            .. warning::
-
-                I don't think this works.
+        """ Switch back to representation in the polynomial basis. 
         """
-        self = GaloisField(self.p, self.n, self.coefs)
+        for el in self.elements:
+            el.is_sdb = False
+            el.sdb_coefs = []
+        self.is_sdb = False
 
 
     def evaluate(self, coefs, argument):
@@ -359,6 +423,17 @@ class GaloisField():
 
                     if i != len(self.coefs) - 1: 
                         print(" + ", end = "")
+
+            # For almost self-dual basis, the full expansion needs to 
+            # include the coefficient c_1. So print a message to show this.
+            if self.p != 2:
+                if self.is_sdb:
+                    if self.sdb_norms.count(1) != len(self.sdb_norms):
+                        print()
+                        print("The coefficients below must take into account the ", end="")
+                        print("normalization of the almost self-dual basis.")
+                        print("To get the proper expression, the first coefficient must always be ", end="")
+                        print("multiplied by the inverse of: " + str(self.sdb_norms[0]))
 
         print("\nField elements:")
         for element in self.elements:
