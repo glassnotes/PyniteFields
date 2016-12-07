@@ -209,7 +209,7 @@ class GaloisField():
 
         # Set the sdb 
         self.is_sdb = True
-        self.sdb = sdb_element_indices
+        self.sdb = valid_element_indices
         self.sdb_norms = valid_sdb_norms
 
 
@@ -309,13 +309,13 @@ class GaloisField():
 
             # For power of primes, the self-dual basis **might** be real (e.g. dim 27).
             # It's possible that all normalizations are 1, so check this, and carry on if true.
-            if normalizations.count(1) != len(sdb_norms):
+            if sdb_norms.count(1) != len(sdb_norms):
                 # If the sdb so far has been okay, let's reshuffle it so the element
                 # with coefficient > 1 is at the beginning. I'm honestly not sure why we 
                 # do this, but this is what Andrei said to do in our LS paper.
                 # Get the index of the non-1 element. Thanks to 
                 # http://stackoverflow.com/questions/4111412/how-do-i-get-a-list-of-indices-of-non-zero-elements-in-a-list
-                non1 = [i for i, e in enumerate(normalizations) if e != 1][0] 
+                non1 = [i for i, e in enumerate(sdb_norms) if e != 1][0] 
 
                 shuffled_sdb = [sdb_element_indices[non1]] + sdb_element_indices[:non1] + \
                                     sdb_element_indices[non1 + 1:]
