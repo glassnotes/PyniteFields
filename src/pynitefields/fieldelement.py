@@ -327,12 +327,21 @@ class FieldElement():
             else:
                 return False
         else:
-            this_exp_str = [str(x) for x in self.exp_coefs]
-            that_exp_str = [str(x) for x in el.exp_coefs]
-            if "".join(this_exp_str) < "".join(that_exp_str):
-                return True
+            # If there is a sdb defined, use that, otherwise use exp_coefs
+            if self.is_sdb:
+                this_exp_str = [str(x) for x in self.sdb_coefs]
+                that_exp_str = [str(x) for x in el.sdb_coefs]
+                if "".join(this_exp_str) < "".join(that_exp_str):
+                    return True
+                else:
+                    return False
             else:
-                return False
+                this_exp_str = [str(x) for x in self.exp_coefs]
+                that_exp_str = [str(x) for x in el.exp_coefs]
+                if "".join(this_exp_str) < "".join(that_exp_str):
+                    return True
+                else:
+                    return False
 
 
     def __repr__(self):
