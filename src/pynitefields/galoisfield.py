@@ -196,7 +196,7 @@ class GaloisField():
 
         # Make sure that the provided sdb is valid. In qudit cases, we may
         # also be shuffling the elements, so make sure to get the shuffled copy.
-        valid_sdb, valid_element_indices valid_sdb_norms = self.verify_sdb(sdb_element_indices)
+        valid_sdb, valid_element_indices, valid_sdb_norms = self.verify_sdb(sdb_element_indices)
 
         if not valid_sdb:
             print("Invalid self-dual basis provided.")
