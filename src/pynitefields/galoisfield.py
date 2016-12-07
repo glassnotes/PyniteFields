@@ -216,7 +216,7 @@ class GaloisField():
         # If all goes well, we can start computing the coefficients
         # in terms of the new elements by using the trace and multiplication
         # functions.
-        sdb_els = [self.elements[sdb_element_indices[i]] for i in range(0, self.n)]
+        sdb_els = [self.elements[self.sdb[i]] for i in range(0, self.n)]
         sdb_field_list = []
         for element in self.elements:
             sdb_coefs = [] # Expansion coefficients in the sdb
