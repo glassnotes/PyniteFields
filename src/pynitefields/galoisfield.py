@@ -212,6 +212,12 @@ class GaloisField():
         self.sdb = valid_element_indices
         self.sdb_norms = valid_sdb_norms
 
+        first_norm_inverse = 1  
+
+        if self.p % 2 == 1 and self.n % 2 == 0: # If p odd, n even
+            for i in range(self.p):
+                if (self.sdb_norms[0] * i) % self.p == 1:
+                    first_norm_inverse = i
 
         # If all goes well, we can start computing the coefficients
         # in terms of the new elements by using the trace and multiplication
@@ -221,8 +227,12 @@ class GaloisField():
         for element in self.elements:
             sdb_coefs = [] # Expansion coefficients in the sdb
 
-            for basis_el in sdb_els:
-                sdb_coefs.append(tr(element * basis_el))
+            for i in range(len(sdb_els)):
+                if i == 0:
+                    sdb_coefs.append((first_norm_inverse * tr(element * sdb_els[i])) % self.p)
+                else:
+                    sdb_coefs.append(tr(element * sdb_els[i]))
+
 
             sdb_field_list.append("".join([str(x) for x in sdb_coefs]))
 
@@ -423,17 +433,6 @@ class GaloisField():
 
                     if i != len(self.coefs) - 1: 
                         print(" + ", end = "")
-
-            # For almost self-dual basis, the full expansion needs to 
-            # include the coefficient c_1. So print a message to show this.
-            if self.p != 2:
-                if self.is_sdb:
-                    if self.sdb_norms.count(1) != len(self.sdb_norms):
-                        print()
-                        print("The coefficients below must take into account the ", end="")
-                        print("normalization of the almost self-dual basis.")
-                        print("To get the proper expression, the first coefficient must always be ", end="")
-                        print("multiplied by the inverse of: " + str(self.sdb_norms[0]))
 
         print("\nField elements:")
         for element in self.elements:
