@@ -61,7 +61,7 @@ class FieldElement():
         # If we're in a prime field, the basis is 1, and
         # the coefficient is just the value
         self.exp_coefs = exp_coefs
-        self.str_rep = "".join([str(x) for x in exp_coefs])
+        self.str_rep = ",".join([str(x) for x in exp_coefs])
 
         # These parameters initially gets set by the GaloisField constructor 
         # after ALL the field elements have been created. This is set only
@@ -87,7 +87,7 @@ class FieldElement():
 
         # Reset the sdb coefficients after an operation if need be.
         if self.is_sdb:
-            self.sdb_coefs = [int(x) for x in self.sdb_field_list[self.prim_power]] 
+            self.sdb_coefs = [int(x) for x in self.sdb_field_list[self.prim_power].split(',')] 
       
 
     def __add__(self, el):
@@ -195,7 +195,7 @@ class FieldElement():
                     # the last field element is 1.
                     if new_exp > self.dim - 1: 
                         new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-                    new_exp_coefs = [int(x) for x in self.field_list[new_exp]] 
+                    new_exp_coefs = [int(x) for x in self.field_list[new_exp].split(',')] 
                     return FieldElement(self.p, self.n, new_exp_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
         else:
             raise TypeError("Unsupported operator")
@@ -277,12 +277,12 @@ class FieldElement():
             new_coefs = []
             # 0, and any element to the 0 is 0 by convention 
             if self.prim_power == 0 or exponent == 0: 
-                new_coefs = [int(x) for x in self.field_list[0]]
+                new_coefs = [int(x) for x in self.field_list[0].split(',')]
             else:
                 new_exp = self.prim_power * exponent
                 if new_exp > self.dim - 1:
                     new_exp = ((new_exp - 1) % (self.dim - 1)) + 1
-                new_coefs = [int(x) for x in self.field_list[new_exp]] 
+                new_coefs = [int(x) for x in self.field_list[new_exp].split(',')] 
             return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
             
 
@@ -388,7 +388,7 @@ class FieldElement():
                 return self 
             # All other elements, find exponent which sums to dim - 1
             else:
-                new_coefs = [int(x) for x in self.field_list[self.dim - self.prim_power - 1]]
+                new_coefs = [int(x) for x in self.field_list[self.dim - self.prim_power - 1].split(',')]
                 return FieldElement(self.p, self.n, new_coefs, self.field_list, self.is_sdb, self.sdb_field_list)
 
 
