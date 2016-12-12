@@ -97,18 +97,18 @@ class GaloisField():
             # The first element is always 0
             self.elements = []
             self.elements.append(FieldElement(self.p, self.n, [0]*self.n))
-            field_list.append("0" * self.n)
+            field_list.append("0," * (self.n - 1) + "0")
 
             # The next few elements are initial terms in the poly basis (i.e. x, x^2 ...)
             for i in range(1, self.n):
                 next_coefs = [0]*(i) + [1] + [0]*(self.n - i - 1) 
                 self.elements.append(FieldElement(self.p, self.n, next_coefs))
-                field_list.append("".join([str(x) for x in next_coefs]))
+                field_list.append(",".join([str(x) for x in next_coefs]))
 
             # For the n^th power of x, we need to use the irreducible polynomial
             nth_coefs = [((-1) * self.coefs[i]) % self.p for i in range(0, self.n)]
             self.elements.append(FieldElement(self.p, self.n, nth_coefs))
-            field_list.append("".join([str(x) for x in nth_coefs]))
+            field_list.append(",".join([str(x) for x in nth_coefs]))
 
             # For the remaining powers, multiply the previous element by primitive element
             for el in range(self.n + 1, self.dim):
@@ -126,7 +126,7 @@ class GaloisField():
 
                 # TODO Make sure that this element is not already in the list - if it is, then
                 # we did not use a true primitive polynomial.
-                str_rep = "".join([str(x) for x in sum.exp_coefs])
+                str_rep = ",".join([str(x) for x in sum.exp_coefs])
                 if str_rep not in field_list:
                     self.elements.append(sum)
                     field_list.append(str_rep)
@@ -234,7 +234,7 @@ class GaloisField():
                     sdb_coefs.append(tr(element * sdb_els[i]))
 
 
-            sdb_field_list.append("".join([str(x) for x in sdb_coefs]))
+            sdb_field_list.append(",".join([str(x) for x in sdb_coefs]))
 
             element.is_sdb = True
             element.sdb_coefs = sdb_coefs
